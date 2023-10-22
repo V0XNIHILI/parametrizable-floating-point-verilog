@@ -2,6 +2,7 @@
 `define FLOATING_POINT_MULTIPLIER_V
 
 `include "is_special_float.v"
+`include "result_rounder.v"
 
 module floating_point_multiplier
     #(parameter EXPONENT_WIDTH = 8,
@@ -43,6 +44,7 @@ module floating_point_multiplier
     reg [MANTISSA_WIDTH+1-1:0] additional_mantissa_bits;
     reg is_halfway;
     reg signed [EXPONENT_WIDTH+2-1:0] a_mul_b_exponent;
+    reg [EXPONENT_WIDTH-1:0] non_rounded_exponent;
     reg leading_one_is_MSB;
 
     wire is_E4M3 = EXPONENT_WIDTH == 4 && MANTISSA_WIDTH == 3;
@@ -78,6 +80,22 @@ module floating_point_multiplier
         .is_zero(is_b_zero),
         .is_signaling_nan(is_signaling_nan_b),
         .is_quiet_nan(is_quiet_nan_b)
+    );
+
+    // Rounding
+
+    reg [MANTISSA_WIDTH-1:0] rounded_mantissa;
+    reg [EXPONENT_WIDTH-1:0] rounded_exponent;
+    reg rounded_overflow_flag;
+
+    result_rounder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST, MANTISSA_WIDTH+1) result_rounder_block
+    (
+        .non_rounded_exponent(non_rounded_exponent),
+        .non_rounded_mantissa(non_rounded_mantissa),
+        .rounding_bits(additional_mantissa_bits),
+        .rounded_exponent(rounded_exponent),
+        .rounded_mantissa(rounded_mantissa),
+        .overflow_flag(rounded_overflow_flag)
     );
 
     // Perform actual multiplication operation
@@ -144,44 +162,14 @@ module floating_point_multiplier
                 // Note: out_sign is already set
                 // Handle the special case where one of the inputs is zero: the output exponent
                 // should then also be explicitly set to 0.
-                out_exponent = (is_a_zero || is_b_zero) ? 0 : a_mul_b_exponent[EXPONENT_WIDTH-1:0] + (leading_one_is_MSB ? 1 : 0);
+                non_rounded_exponent = (is_a_zero || is_b_zero) ? 0 : a_mul_b_exponent[EXPONENT_WIDTH-1:0] + (leading_one_is_MSB ? 1 : 0);
                 non_rounded_mantissa = leading_one_is_MSB ? a_mul_b_mantissa[2*MANTISSA_WIDTH:MANTISSA_WIDTH+1] : a_mul_b_mantissa[2*MANTISSA_WIDTH-1:MANTISSA_WIDTH];
                 additional_mantissa_bits = leading_one_is_MSB ? a_mul_b_mantissa[MANTISSA_WIDTH:0] : a_mul_b_mantissa[MANTISSA_WIDTH-1:0] << 1;
 
-                out_mantissa = non_rounded_mantissa;
-
-                // TODO: only take 3 MSB of additional_mantissa_bits (GRS)
-                if (ROUND_TO_NEAREST == 1) begin
-                    is_halfway = additional_mantissa_bits == {1'b1, {MANTISSA_WIDTH{1'b0}}};
-
-                    // If the additonal mantissa bits are exactly halfway and if the last bit of the mantissa is 1
-                    // OR
-                    // if the additional bits are more than halfway,
-                    // round up
-                    if ((is_halfway && non_rounded_mantissa[0] == 1'b1) || (!is_halfway && additional_mantissa_bits[MANTISSA_WIDTH] == 1'b1)) begin
-                        $display("Rounding up.");
-
-                        out_mantissa = non_rounded_mantissa + 1;
-
-                        // If the mantissa has overflowed
-                        if (out_mantissa == 0) begin
-                            $display("Mantissa has overflowed due to rounding.");
-
-                            out_exponent = out_exponent + 1;
-
-                            if (out_exponent == {EXPONENT_WIDTH{1'b1}}) begin
-                                $display("Overflow detected.");
-
-                                // Note: out_sign is already set
-                                out_exponent = {EXPONENT_WIDTH{1'b1}};
-                                out_mantissa = {MANTISSA_WIDTH{1'b0}};
-
-                                overflow_flag = 1'b1;
-                            end
-                        end
-                    end
-                    // Else, round down; nothing to do
-                end
+                // Then the result is rounded
+                out_mantissa = rounded_mantissa;
+                out_exponent = rounded_exponent;
+                overflow_flag = rounded_overflow_flag;            
             end
 
             out = {out_sign, out_exponent, out_mantissa};

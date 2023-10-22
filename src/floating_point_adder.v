@@ -3,6 +3,7 @@
 
 `include "is_special_float.v"
 `include "leading_one_detector.v"
+`include "result_rounder.v"
 
 module floating_point_adder
     #(parameter EXPONENT_WIDTH = 8,
@@ -55,6 +56,7 @@ module floating_point_adder
     reg [MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS-1:0] positive_summed_mantissa;
     reg [MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS-1:0] normalized_mantissa;
     reg [MANTISSA_WIDTH-1:0] non_rounded_mantissa;
+
     reg [ROUNDING_BITS-1:0] additional_mantissa_bits;
     reg signed [EXPONENT_WIDTH+2-1:0] temp_exponent;
     wire [$clog2(MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS)-1:0] leading_one_pos;
@@ -98,6 +100,24 @@ module floating_point_adder
         .is_signaling_nan(is_signaling_nan_b),
         .is_quiet_nan(is_quiet_nan_b)
     );
+
+    // Rounding
+
+    reg [MANTISSA_WIDTH-1:0] rounded_mantissa;
+    reg [EXPONENT_WIDTH-1:0] rounded_exponent;
+    reg rounded_overflow_flag;
+
+    result_rounder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST, ROUNDING_BITS) result_rounder_block
+    (
+        .non_rounded_exponent(temp_exponent),
+        .non_rounded_mantissa(non_rounded_mantissa),
+        .rounding_bits(additional_mantissa_bits),
+        .rounded_exponent(rounded_exponent),
+        .rounded_mantissa(rounded_mantissa),
+        .overflow_flag(rounded_overflow_flag)
+    );
+
+    // Perform actual addition operation
 
     always @(*) begin
         underflow_flag = 1'b0;
@@ -184,57 +204,21 @@ module floating_point_adder
 
                 // Note: out_sign is already set
                 out_exponent = {EXPONENT_WIDTH{1'b1}};
-                $display("out_exponent = %b", out_exponent);
                 out_mantissa = {MANTISSA_WIDTH{1'b0}};
-                $display("out_mantissa = %b", out_mantissa);
 
                 overflow_flag = 1'b1;
             // In the normal case
             end else begin
-                out_exponent = temp_exponent;
-                $display("A out_exponent = %b", out_exponent);
-
+                // These two values are fed into the result_rounder module
                 non_rounded_mantissa = normalized_mantissa[MANTISSA_WIDTH+TRUE_ROUNDING_BITS-1:TRUE_ROUNDING_BITS];
                 additional_mantissa_bits = normalized_mantissa[ROUNDING_BITS-1:0];
 
-                out_mantissa = non_rounded_mantissa;
-
-                if (ROUND_TO_NEAREST == 1) begin
-                    is_halfway = additional_mantissa_bits == {1'b1, {(ROUNDING_BITS-1){1'b0}}};
-
-                    // If the additonal mantissa bits are exactly halfway and if the last bit of the mantissa is 1
-                    // OR
-                    // if the additional bits are more than halfway,
-                    // round up
-                    if ((is_halfway && non_rounded_mantissa[0] == 1'b1) || (!is_halfway && additional_mantissa_bits[ROUNDING_BITS-1] == 1'b1)) begin
-                        $display("Rounding up.");
-
-                        out_mantissa = non_rounded_mantissa + 1;
-
-                        // If the mantissa has overflowed
-                        if (out_mantissa == 0) begin
-                            $display("Mantissa has overflowed due to rounding.");
-
-                            out_exponent = out_exponent + 1;
-
-                            if (out_exponent == {EXPONENT_WIDTH{1'b1}}) begin
-                                $display("Overflow detected.");
-
-                                // Note: out_sign is already set
-                                out_exponent = {EXPONENT_WIDTH{1'b1}};
-                                out_mantissa = {MANTISSA_WIDTH{1'b0}};
-
-                                overflow_flag = 1'b1;
-                            end
-                        end
-                    end
-                    // Else, round down; nothing to do
-                end
+                // Then the result is rounded
+                out_mantissa = rounded_mantissa;
+                out_exponent = rounded_exponent;
+                overflow_flag = rounded_overflow_flag;
             end
 
-            $display("out_sign = %b", out_sign);
-            $display("out_exponent = %b", out_exponent);
-            $display("out_mantissa = %b", out_mantissa);
             out = {out_sign, out_exponent, out_mantissa};
         end
     end
