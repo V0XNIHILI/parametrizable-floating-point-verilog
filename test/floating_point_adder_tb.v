@@ -141,6 +141,53 @@ module tb_floating_point_adder;
             end
         end
 
+        `TEST_SUITE("Zeroes") begin
+            `TEST_CASE("0.0 + 3.0 = 3.0") begin
+                a = 32'h00000000; // 0.0
+                b = 32'h40400000; // 3.0
+                #1;
+                
+                tasks.check_equal(b, out); // Expected: 3.0
+                 `check_flags(0, 0, 0);
+            end
+
+            `TEST_CASE("120 + 0.0 = 120.0") begin
+                a = 32'h42F00000; // 120.0
+                b = 32'h00000000; // 0.0
+                #1;
+                
+                tasks.check_equal(a, out); // Expected: 12.0
+                 `check_flags(0, 0, 0);
+            end
+
+            `TEST_CASE("QNaN + 0.0 = QNaN") begin
+                a = 32'hFFC00000; // QNaN
+                b = 32'h00000000; // 0.0
+                #1;
+                
+                tasks.check_equal(a, out); // Expected: QNaN
+                `check_flags(0, 0, 1);
+            end
+
+            `TEST_CASE("SNaN + 0.0 = QNaN") begin
+                a = 32'hFFA00000; // SNaN
+                b = 32'h00000000; // 0.0
+                #1;
+                
+                tasks.check_equal(32'hFFC00000, out); // Expected: QNaN
+                `check_flags(0, 0, 1);
+            end
+
+            `TEST_CASE("+0 + -0 = +0") begin
+                a = 32'h00000000; // +0
+                b = 32'h80000000; // -0
+                #1;
+                
+                tasks.check_equal(a, out); // Expected: +0
+                 `check_flags(0, 0, 0);
+            end
+        end        
+
         `ROUND_UP
     end
 endmodule
