@@ -23,10 +23,6 @@ module tb_floating_point_adder;
     wire overflow_flag;
     wire invalid_operation_flag;
 
-
-    `define steps 5
-    reg [FLOAT_BIT_WIDTH*3-1:0] weights_per_step [`steps-1:0];
-
     // Instantiate the floating-point multiplier
     floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH) uut (
         .a(a),
@@ -85,6 +81,63 @@ module tb_floating_point_adder;
                 
                 tasks.check_equal(32'h3F6E1B09, out); // Expected: 0.9301
                  `check_flags(0, 0, 0);
+            end
+        end
+
+        `TEST_SUITE("Infinity") begin
+            `TEST_CASE("+Inf + 3.0 = +Inf") begin
+                a = 32'h7F800000; // +Inf
+                b = 32'h40400000; // 3.0
+                subtract = 0;
+
+                #1;
+                
+                tasks.check_equal(a, out); // Expected: +Inf
+                `check_flags(0, 1, 0);
+            end
+
+            `TEST_CASE("+Inf + +Inf = +Inf") begin
+                a = 32'h7F800000; // +Inf
+                b = 32'h7F800000; // +Inf
+                subtract = 0;
+
+                #1;
+                
+                tasks.check_equal(a, out); // Expected: +Inf
+                `check_flags(0, 1, 0);
+            end
+
+            `TEST_CASE("-Inf + +Inf = QNaN") begin
+                a = 32'hFF800000; // -Inf
+                b = 32'h7F800000; // +Inf
+                subtract = 0;
+
+                #1;
+                
+                tasks.check_equal(32'hFFC00000, out); // Expected: QNaN
+                `check_flags(0, 0, 1);
+            end
+
+            `TEST_CASE("+Inf - +Inf = QNaN") begin
+                a = 32'h7F800000; // +Inf
+                b = 32'h7F800000; // +Inf
+                subtract = 1;
+
+                #1;
+                
+                tasks.check_equal(32'hFFC00000, out); // Expected: QNaN
+                `check_flags(0, 0, 1);
+            end            
+
+            `TEST_CASE("-Inf + -Inf = -Inf") begin
+                a = 32'hFF800000; // -Inf
+                b = 32'hFF800000; // -Inf
+                subtract = 0;
+
+                #1;
+                
+                tasks.check_equal(a, out); // Expected: -Inf
+                `check_flags(0, 1, 0);
             end
         end
 
