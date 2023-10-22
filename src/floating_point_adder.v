@@ -50,8 +50,10 @@ module floating_point_adder
     // Temporary variables
     reg signed [EXPONENT_WIDTH+1-1:0] exponent_difference;
     reg [EXPONENT_WIDTH-1:0] abs_exponent_difference;
+
     reg [MANTISSA_WIDTH+1+TRUE_ROUNDING_BITS-1:0] a_shifted_mantissa; // TRUE_ROUNDING_BITS extra bits for rounding
     reg [MANTISSA_WIDTH+1+TRUE_ROUNDING_BITS-1:0] b_shifted_mantissa; // TRUE_ROUNDING_BITS extra bits for rounding
+
     reg signed [MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS+1-1:0] summed_mantissa;
     reg [MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS-1:0] positive_summed_mantissa;
     reg [MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS-1:0] normalized_mantissa;
@@ -59,15 +61,17 @@ module floating_point_adder
 
     reg [ROUNDING_BITS-1:0] additional_mantissa_bits;
     reg signed [EXPONENT_WIDTH+2-1:0] temp_exponent;
-    wire [$clog2(MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS)-1:0] leading_one_pos;
-    wire has_leading_one;
-    reg is_halfway;
 
     wire is_E4M3 = EXPONENT_WIDTH == 4 && MANTISSA_WIDTH == 3;
 
     // Special pre-defined values. {MANTISSA_WIDTH-1{...}} could also have been {MANTISSA_WIDTH-1{1'bX}}
     // but like this it explicitly supports the E4M3 variant.
-    wire [FLOAT_BIT_WIDTH-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};    
+    wire [FLOAT_BIT_WIDTH-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};
+
+    // Leading one detection
+
+    wire [$clog2(MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS)-1:0] leading_one_pos;
+    wire has_leading_one;    
 
     leading_one_detector #(.WIDTH(MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS)) leading_one_detector_summed_mantissa
     (
