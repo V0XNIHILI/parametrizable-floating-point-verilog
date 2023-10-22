@@ -112,13 +112,24 @@ module floating_point_adder
             if ((is_signaling_nan_a || is_signaling_nan_b) || ((is_quiet_nan_a && (!is_signaling_nan_b && !is_quiet_nan_b)) || (is_quiet_nan_b && (!is_signaling_nan_a && !is_quiet_nan_a)))) begin
                 invalid_operation_flag = 1'b1;
             end
+        // Cover: -Inf + +Inf = QNaN and +Inf - +Inf = QNaN
         end else if ((is_a_infinite && is_b_infinite) && ((!(a_sign && b_sign) && subtract) || (a_sign && !b_sign))) begin
-            $display("Result is QNaN due to one of the operands being zero and the other being infinite.");
+            $display("Result is QNaN due to the fact that two opposite infinities were added.");
 
             out = quiet_nan;
 
             invalid_operation_flag = 1'b1;
+        // Handle two special cases that otherwise are not correctly covered by the logic in the else block;
+        // -Inf + -Inf = -Inf and +Inf + +Inf = +Inf
+        end else if ((is_a_infinite && is_b_infinite) && !subtract && a_sign == b_sign) begin
+            $display("Overflow detected.");
+
+            out = {a_sign, {EXPONENT_WIDTH{1'b1}}, {MANTISSA_WIDTH{1'b0}}};
+
+            overflow_flag = 1'b1;            
         end else begin
+            // Perform regular addition operation
+
             exponent_difference = a_exponent - b_exponent;
             out_sign = 1'b0;
 
@@ -153,11 +164,13 @@ module floating_point_adder
                 out_sign = 1'b1;
             end
 
+            // At this line, summed_mantissa is always positive
             positive_summed_mantissa = summed_mantissa;
 
-            normalized_mantissa = (positive_summed_mantissa >> has_leading_one*(leading_one_pos-(MANTISSA_WIDTH+ROUNDING_BITS)));
-            temp_exponent = out_exponent + has_leading_one*(MANTISSA_WIDTH+TRUE_ROUNDING_BITS-leading_one_pos);
-            
+            // Multiply with has_leading_one to only shift if there is a leading 1
+            normalized_mantissa = (positive_summed_mantissa >> (leading_one_pos-(MANTISSA_WIDTH+ROUNDING_BITS)));
+            temp_exponent = out_exponent + (MANTISSA_WIDTH+TRUE_ROUNDING_BITS-leading_one_pos);
+
             if (temp_exponent < 0) begin
                 $display("Underflow detected.");
 
@@ -171,12 +184,15 @@ module floating_point_adder
 
                 // Note: out_sign is already set
                 out_exponent = {EXPONENT_WIDTH{1'b1}};
+                $display("out_exponent = %b", out_exponent);
                 out_mantissa = {MANTISSA_WIDTH{1'b0}};
+                $display("out_mantissa = %b", out_mantissa);
 
                 overflow_flag = 1'b1;
             // In the normal case
             end else begin
                 out_exponent = temp_exponent;
+                $display("A out_exponent = %b", out_exponent);
 
                 non_rounded_mantissa = normalized_mantissa[MANTISSA_WIDTH+TRUE_ROUNDING_BITS-1:TRUE_ROUNDING_BITS];
                 additional_mantissa_bits = normalized_mantissa[ROUNDING_BITS-1:0];
@@ -216,6 +232,9 @@ module floating_point_adder
                 end
             end
 
+            $display("out_sign = %b", out_sign);
+            $display("out_exponent = %b", out_exponent);
+            $display("out_mantissa = %b", out_mantissa);
             out = {out_sign, out_exponent, out_mantissa};
         end
     end
