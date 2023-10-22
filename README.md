@@ -1,6 +1,6 @@
 # Parametrizable floating point operations in Verilog
 
-This is a small library for floating point operations in Verilog. It is based on the IEEE 754-2008 standard for floating point arithmetic. The library currently supports addition and multiplication of floating point numbers.
+This is a small library for floating point operations in Verilog. It is based on the IEEE 754-2008 standard for floating point arithmetic. The library currently supports addition/subtraction and multiplication of floating point numbers.
 
 Compared to most other public floating point implementations in Verilog, this version has the following features:
 
@@ -94,4 +94,10 @@ Compared to most other public floating point implementations in Verilog, this ve
     floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST) fp_multiplier_no_rounding ( ... );
 
 // end of your own module instantiation
+```
+
+### [Floating-point conversion](src/floating_point_conversion.v)
+
+```verilog
+// TO DO!
 ```
