@@ -1,0 +1,29 @@
+# Package metadata. Required.
+package:
+  # The name of the package. Required.
+  name: parametrizable-floating-point-verilog
+
+  # The list of package authors and contributors. Optional.
+  # By convention, authors should be listed in the form shown below.
+  authors: ["Douwe den Blanken <douwedb@gmail.com>"]
+
+# Freeze any dependency updates. Optional. False if omitted.
+# Useful for chip packages. Once the chip is in final tapeout mode, and
+# dependency updates would require disastrous amounts of re-verification.
+frozen: false
+
+# List of source files in this package. Optional.
+sources:
+  - target: test
+    files:
+      - test/floating_point_adder_tb.v
+      - test/floating_point_multiplier_tb.v
+      - test/leading_one_detector_tb.v
+
+  - target: rtl
+    files:
+      - src/floating_point_adder.v
+      - src/floating_point_multiplier.v
+      - src/leading_one_detector.v
+      - src/is_special_float.v
+      - src/result_rounder.v
