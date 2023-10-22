@@ -49,7 +49,7 @@ module floating_point_multiplier
 
     wire is_E4M3 = EXPONENT_WIDTH == 4 && MANTISSA_WIDTH == 3;
 
-    // TODO: figure out how to support NaN for E2M3, E3M2 and E2M1 forrmats,
+    // TODO: figure out how to support NaN for E2M3, E3M2 and E2M1 formats,
     // which all do not have NaNs defined.
 
     // Special pre-defined values. {MANTISSA_WIDTH-1{...}} could also have been {MANTISSA_WIDTH-1{1'bX}}
