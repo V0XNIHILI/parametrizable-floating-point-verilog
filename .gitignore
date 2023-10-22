@@ -1,0 +1,14 @@
+# Output files
+*.vcd
+
+# Editors
+.vscode
+
+# iverilog
+*.iv
+
+# QuestaSim
+work
+
+# macOS
+.DS_Store
