@@ -1,5 +1,5 @@
-`ifndef IS_SPECIAL_FLOAT_V
-`define IS_SPECIAL_FLOAT_V
+`ifndef __IS_SPECIAL_FLOAT_V__
+`define __IS_SPECIAL_FLOAT_V__
 
 module is_special_float 
     #(parameter EXPONENT_WIDTH = 8,

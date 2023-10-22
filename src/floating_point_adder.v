@@ -1,5 +1,5 @@
-`ifndef FLOATING_POINT_ADDER_V
-`define FLOATING_POINT_ADDER_V
+`ifndef __FLOATING_POINT_ADDER_V__
+`define __FLOATING_POINT_ADDER_V__
 
 `include "is_special_float.v"
 `include "leading_one_detector.v"

@@ -1,3 +1,6 @@
+`ifndef __RESULT_ROUNDER_V__
+`define __RESULT_ROUNDER_V__
+
 module result_rounder
     #(parameter EXPONENT_WIDTH = 8,
       parameter MANTISSA_WIDTH = 23,
@@ -53,3 +56,5 @@ module result_rounder
     end
 
 endmodule
+
+`endif

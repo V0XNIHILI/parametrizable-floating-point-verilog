@@ -1,3 +1,6 @@
+`ifndef __LEADING_ONE_DETECTOR_V__
+`define __LEADING_ONE_DETECTOR_V__
+
 module leading_one_detector
     #(parameter WIDTH = 8) (
         input [WIDTH-1:0] in,
@@ -21,3 +24,5 @@ module leading_one_detector
     endgenerate
 
 endmodule
+
+`endif
