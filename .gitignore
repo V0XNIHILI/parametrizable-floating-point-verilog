@@ -1,5 +1,6 @@
 # Output files
 *.vcd
+*.bin
 
 # Editors
 .vscode
