@@ -150,6 +150,7 @@ module floating_point_multiplier
 
                 out_mantissa = non_rounded_mantissa;
 
+                // TODO: only take 3 MSB of additional_mantissa_bits (GRS)
                 if (ROUND_TO_NEAREST == 1) begin
                     is_halfway = additional_mantissa_bits == {1'b1, {MANTISSA_WIDTH{1'b0}}};
 
@@ -158,30 +159,26 @@ module floating_point_multiplier
                     // if the additional bits are more than halfway,
                     // round up
                     if ((is_halfway && non_rounded_mantissa[0] == 1'b1) || (!is_halfway && additional_mantissa_bits[MANTISSA_WIDTH] == 1'b1)) begin
-                        // If the last bit of the mantissa is 1, round up
-                        if (non_rounded_mantissa[0] == 1'b1) begin
-                            $display("Rounding up.");
+                        $display("Rounding up.");
 
-                            out_mantissa = non_rounded_mantissa + 1;
+                        out_mantissa = non_rounded_mantissa + 1;
 
-                            // If the mantissa has overflowed
-                            if (out_mantissa == 0) begin
-                                $display("Mantissa has overflowed due to rounding.");
+                        // If the mantissa has overflowed
+                        if (out_mantissa == 0) begin
+                            $display("Mantissa has overflowed due to rounding.");
 
-                                out_exponent = out_exponent + 1;
+                            out_exponent = out_exponent + 1;
 
-                                if (out_exponent == {EXPONENT_WIDTH{1'b1}}) begin
-                                    $display("Overflow detected.");
+                            if (out_exponent == {EXPONENT_WIDTH{1'b1}}) begin
+                                $display("Overflow detected.");
 
-                                    // Note: out_sign is already set
-                                    out_exponent = {EXPONENT_WIDTH{1'b1}};
-                                    out_mantissa = {MANTISSA_WIDTH{1'b0}};
+                                // Note: out_sign is already set
+                                out_exponent = {EXPONENT_WIDTH{1'b1}};
+                                out_mantissa = {MANTISSA_WIDTH{1'b0}};
 
-                                    overflow_flag = 1'b1;
-                                end
+                                overflow_flag = 1'b1;
                             end
                         end
-                        // Else, round down; nothing to do
                     end
                     // Else, round down; nothing to do
                 end
