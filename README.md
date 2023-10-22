@@ -1,6 +1,17 @@
 # Parametrizable floating point operations in Verilog
 
-Single-cycle floating-point adder and multiplier with parameters for exponent and mantissa bit widths, rounding, and support for all special cases (SNaN/QNaN, +-infinity, denormalized numbers, etc.).
+This is a small library for floating point operations in Verilog. It is based on the IEEE 754-2008 standard for floating point arithmetic. The library currently supports addition and multiplication of floating point numbers.
+
+Compared to most other public floating point implementations in Verilog, this version has the following features:
+
+- Fully parametrizable bit widths for exponent and mantissa
+- Handles all special cases:
+    - SNaN/QNaN
+    - ± infinity
+    - Denormalized numbers
+    - Zeroes
+- Single cycle operation
+- Supports rounding to nearest (per official specification) or simply chopping bits
 
 ## Usage
 
