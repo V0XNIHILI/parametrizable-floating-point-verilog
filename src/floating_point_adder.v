@@ -6,10 +6,10 @@
 `include "result_rounder.v"
 
 module floating_point_adder
-    #(parameter EXPONENT_WIDTH = 8,
-      parameter MANTISSA_WIDTH = 23,
-      parameter ROUND_TO_NEAREST = 1, // 0: round to zero (chopping last bits), 1: round to nearest
-      parameter ROUNDING_BITS = 3 // Number of bits to use for rounding, should always be larger than 1, even for ROUND_TO_NEAREST = 0
+    #(parameter int EXPONENT_WIDTH = 8,
+      parameter int MANTISSA_WIDTH = 23,
+      parameter int ROUND_TO_NEAREST = 1, // 0: round to zero (chopping last bits), 1: round to nearest
+      parameter int ROUNDING_BITS = 3 // Number of bits to use for rounding, should always be larger than 1, even for ROUND_TO_NEAREST = 0
     ) (
         input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
         input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
@@ -24,8 +24,8 @@ module floating_point_adder
         output reg invalid_operation_flag
     );
 
-    localparam TRUE_ROUNDING_BITS = ROUNDING_BITS * ROUND_TO_NEAREST;
-    localparam FLOAT_BIT_WIDTH = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
+    localparam int TRUE_ROUNDING_BITS = ROUNDING_BITS * ROUND_TO_NEAREST;
+    localparam int FLOAT_BIT_WIDTH = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
 
     // Unpack input floats
 
@@ -71,7 +71,7 @@ module floating_point_adder
     // Leading one detection
 
     wire [$clog2(MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS)-1:0] leading_one_pos;
-    wire has_leading_one;    
+    wire has_leading_one;
 
     leading_one_detector #(.WIDTH(MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS)) leading_one_detector_summed_mantissa
     (
@@ -111,8 +111,12 @@ module floating_point_adder
     reg [EXPONENT_WIDTH-1:0] rounded_exponent;
     reg rounded_overflow_flag;
 
-    result_rounder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST, ROUNDING_BITS) result_rounder_block
-    (
+    result_rounder #(
+        .EXPONENT_WIDTH(EXPONENT_WIDTH),
+        .MANTISSA_WIDTH(MANTISSA_WIDTH),
+        .ROUND_TO_NEAREST(ROUND_TO_NEAREST),
+        .ROUNDING_BITS(ROUNDING_BITS)
+    ) result_rounder_block (
         .non_rounded_exponent(temp_exponent),
         .non_rounded_mantissa(non_rounded_mantissa),
         .rounding_bits(additional_mantissa_bits),
@@ -150,7 +154,7 @@ module floating_point_adder
 
             out = {a_sign, {EXPONENT_WIDTH{1'b1}}, {MANTISSA_WIDTH{1'b0}}};
 
-            overflow_flag = 1'b1;            
+            overflow_flag = 1'b1;
         end else begin
             // Perform regular addition operation
 
@@ -159,7 +163,7 @@ module floating_point_adder
 
             a_shifted_mantissa = {a_implicit_leading_bit, a_mantissa} << TRUE_ROUNDING_BITS;
             b_shifted_mantissa = {b_implicit_leading_bit, b_mantissa} << TRUE_ROUNDING_BITS;
-            
+
             if (exponent_difference >= 0) begin
                 $display("A exponent is bigger than B exponent");
 
