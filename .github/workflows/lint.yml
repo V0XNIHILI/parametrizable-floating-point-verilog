@@ -7,4 +7,4 @@ jobs:
     - uses: actions/checkout@master
     - uses: chipsalliance/verible-linter-action@main
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        extra_args: "--lint_fatal"
