@@ -17,7 +17,7 @@ module result_rounder
 
     reg is_halfway;
 
-    always @(*) begin
+    always_comb begin
         overflow_flag = 1'b0;
         rounded_mantissa = non_rounded_mantissa;
         rounded_exponent = non_rounded_exponent;

@@ -127,7 +127,7 @@ module floating_point_adder
 
     // Perform actual addition operation
 
-    always @(*) begin
+    always_comb begin
         underflow_flag = 1'b0;
         overflow_flag = 1'b0;
         invalid_operation_flag = 1'b0;
