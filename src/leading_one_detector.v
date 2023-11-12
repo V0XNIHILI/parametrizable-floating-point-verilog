@@ -12,7 +12,7 @@ module leading_one_detector
 
     genvar i;
     generate
-        begin: leading_one_detector_for_loop
+        begin: gen_leading_one_detector_for_loop
             for (i = WIDTH-1; i >= 0; i = i - 1) begin
                 always_comb begin
                     if (has_leading_one) begin
