@@ -19,7 +19,7 @@ module floating_point_multiplier
         output reg invalid_operation_flag
     );
 
-    localparam int FLOAT_BIT_WIDTH = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
+    localparam int FloatBitWidth = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
 
     // Unpack input floats
 
@@ -54,7 +54,7 @@ module floating_point_multiplier
 
     // Special pre-defined values. {MANTISSA_WIDTH-1{...}} could also have been {MANTISSA_WIDTH-1{1'bX}}
     // but like this it explicitly supports the E4M3 variant.
-    wire [FLOAT_BIT_WIDTH-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};
+    wire [FloatBitWidth-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};
     wire [EXPONENT_WIDTH-1-1:0] bias = {(EXPONENT_WIDTH-1){1'b1}};
 
     // Find special float values

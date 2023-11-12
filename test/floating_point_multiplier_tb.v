@@ -4,9 +4,9 @@
 
 module tb_floating_point_multiplier;
     // Parameters for the floating-point multiplier
-    localparam EXPONENT_WIDTH = 8;
-    localparam MANTISSA_WIDTH = 23;
-    localparam FLOAT_BIT_WIDTH = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
+    localparam ExponentWidth = 8;
+    localparam MantissaWidth = 23;
+    localparam FloatBitWidth = ExponentWidth + MantissaWidth + 1;
 
     // Macro function to check the exception flags
     `define check_flags(uf, of, inv) \
@@ -15,19 +15,19 @@ module tb_floating_point_multiplier;
     tasks.check_equal(inv, invalid_operation_flag)
 
     // Signals for the multiplier and exception flags
-    reg [FLOAT_BIT_WIDTH-1:0] a;
-    reg [FLOAT_BIT_WIDTH-1:0] b;
-    wire [FLOAT_BIT_WIDTH-1:0] out;
+    reg [FloatBitWidth-1:0] a;
+    reg [FloatBitWidth-1:0] b;
+    wire [FloatBitWidth-1:0] out;
     wire underflow_flag;
     wire overflow_flag;
     wire invalid_operation_flag;
 
 
     `define steps 5
-    reg [FLOAT_BIT_WIDTH*3-1:0] weights_per_step [`steps-1:0];
+    reg [FloatBitWidth*3-1:0] weights_per_step [`steps-1:0];
 
     // Instantiate the floating-point multiplier
-    floating_point_multiplier #(EXPONENT_WIDTH, MANTISSA_WIDTH) uut (
+    floating_point_multiplier #(ExponentWidth, MantissaWidth) uut (
         .a(a),
         .b(b),
         .out(out),
@@ -43,12 +43,12 @@ module tb_floating_point_multiplier;
         `TEST_SUITE("Normal floating-point numbers") begin
             for (int i = 0; i < `steps; i = i + 1) begin
                 `TEST_CASE("Try random floats") begin
-                    a = weights_per_step[i][FLOAT_BIT_WIDTH*3-1:FLOAT_BIT_WIDTH*2];
-                    b = weights_per_step[i][FLOAT_BIT_WIDTH*2-1:FLOAT_BIT_WIDTH];
+                    a = weights_per_step[i][FloatBitWidth*3-1:FloatBitWidth*2];
+                    b = weights_per_step[i][FloatBitWidth*2-1:FloatBitWidth];
 
                     #1;
                     
-                    tasks.check_equal(weights_per_step[i][FLOAT_BIT_WIDTH-1:0], out);
+                    tasks.check_equal(weights_per_step[i][FloatBitWidth-1:0], out);
                     `check_flags(0, 0, 0);
                 end
             end

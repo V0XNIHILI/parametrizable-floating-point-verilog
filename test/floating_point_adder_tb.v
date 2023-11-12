@@ -3,10 +3,10 @@
 `include "defines.vh"
 
 module tb_floating_point_adder;
-    // Parameters for the floating-point multiplier
-    localparam EXPONENT_WIDTH = 8;
-    localparam MANTISSA_WIDTH = 23;
-    localparam FLOAT_BIT_WIDTH = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
+    // Parameters for the floating-point adder
+    localparam ExponentWidth = 8;
+    localparam MantissaWidth = 23;
+    localparam FloatBitWidth = ExponentWidth + MantissaWidth + 1;
 
     // Macro function to check the exception flags
     `define check_flags(uf, of, inv) \
@@ -15,20 +15,20 @@ module tb_floating_point_adder;
     tasks.check_equal(inv, invalid_operation_flag)
 
     // Signals for the multiplier and exception flags
-    reg [FLOAT_BIT_WIDTH-1:0] a;
-    reg [FLOAT_BIT_WIDTH-1:0] b;
+    reg [FloatBitWidth-1:0] a;
+    reg [FloatBitWidth-1:0] b;
     reg subtract;
-    wire [FLOAT_BIT_WIDTH-1:0] out;
+    wire [FloatBitWidth-1:0] out;
     wire underflow_flag;
     wire overflow_flag;
     wire invalid_operation_flag;
 
     // Instantiate the floating-point multiplier
-    floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH) uut (
+    floating_point_adder #(ExponentWidth, MantissaWidth) uut (
         .a(a),
         .b(b),
-        .out(out),
         .subtract(subtract),
+        .out(out),
         .underflow_flag(underflow_flag),
         .overflow_flag(overflow_flag),
         .invalid_operation_flag(invalid_operation_flag)
