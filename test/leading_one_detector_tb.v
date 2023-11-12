@@ -4,15 +4,15 @@
 
 module tb_leading_one_detector;
     // Parameters for the leading one detector
-    localparam WIDTH = 12;
+    localparam Width = 12;
 
     // Signals for the leading one detector
-    reg [WIDTH-1:0] in;
-    wire [$clog2(WIDTH)-1:0] position;
+    reg [Width-1:0] in;
+    wire [$clog2(Width)-1:0] position;
     wire has_leading_one;
 
     // Instantiate the leading one detector
-    leading_one_detector #(WIDTH) uut (
+    leading_one_detector #(Width) uut (
         .in(in),
         .position(position),
         .has_leading_one(has_leading_one)
@@ -21,7 +21,7 @@ module tb_leading_one_detector;
     // Test cases
     initial begin
         `TEST_SUITE("Full zeroes with one 1") begin
-            for (int i = 0; i < WIDTH; i = i + 1) begin
+            for (int i = 0; i < Width; i = i + 1) begin
                 `TEST_CASE("Try single one") begin
                     in = 0; #1; in[i] = 1'b1;
 

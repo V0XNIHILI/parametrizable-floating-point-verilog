@@ -1,9 +1,9 @@
 `ifndef __IS_SPECIAL_FLOAT_V__
 `define __IS_SPECIAL_FLOAT_V__
 
-module is_special_float 
-    #(parameter EXPONENT_WIDTH = 8,
-      parameter MANTISSA_WIDTH = 23)
+module is_special_float
+    #(parameter int EXPONENT_WIDTH = 8,
+      parameter int MANTISSA_WIDTH = 23)
     (
         input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
         output is_infinite,
@@ -37,7 +37,7 @@ module is_special_float
     wire is_mantissa_zero = (mantissa == {MANTISSA_WIDTH{1'b0}});
     wire is_mantissa_ones = (mantissa == {MANTISSA_WIDTH{1'b1}});
     wire is_negative = sign == 1'b1;
- 
+
     // E2M3, E3M2 and E2M1 do not have infinite and NaN values.
     assign is_infinite = is_E4M3 || is_E2M3 || is_E3M2 || is_E2M1 ? 1'b0 : is_exponent_ones && is_mantissa_zero;
     assign is_zero = is_exponent_zero && is_mantissa_zero;

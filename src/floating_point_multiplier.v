@@ -5,9 +5,9 @@
 `include "result_rounder.v"
 
 module floating_point_multiplier
-    #(parameter EXPONENT_WIDTH = 8,
-      parameter MANTISSA_WIDTH = 23,
-      parameter ROUND_TO_NEAREST = 1 // 0: round to zero (chopping last bits), 1: round to nearest
+    #(parameter int EXPONENT_WIDTH = 8,
+      parameter int MANTISSA_WIDTH = 23,
+      parameter int ROUND_TO_NEAREST = 1 // 0: round to zero (chopping last bits), 1: round to nearest
     ) (
         input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
         input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
@@ -19,7 +19,7 @@ module floating_point_multiplier
         output reg invalid_operation_flag
     );
 
-    localparam FLOAT_BIT_WIDTH = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
+    localparam int FloatBitWidth = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
 
     // Unpack input floats
 
@@ -54,7 +54,7 @@ module floating_point_multiplier
 
     // Special pre-defined values. {MANTISSA_WIDTH-1{...}} could also have been {MANTISSA_WIDTH-1{1'bX}}
     // but like this it explicitly supports the E4M3 variant.
-    wire [FLOAT_BIT_WIDTH-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};
+    wire [FloatBitWidth-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};
     wire [EXPONENT_WIDTH-1-1:0] bias = {(EXPONENT_WIDTH-1){1'b1}};
 
     // Find special float values
@@ -88,8 +88,12 @@ module floating_point_multiplier
     reg [EXPONENT_WIDTH-1:0] rounded_exponent;
     reg rounded_overflow_flag;
 
-    result_rounder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST, MANTISSA_WIDTH+1) result_rounder_block
-    (
+    result_rounder #(
+        .EXPONENT_WIDTH(EXPONENT_WIDTH),
+        .MANTISSA_WIDTH(MANTISSA_WIDTH),
+        .ROUND_TO_NEAREST(ROUND_TO_NEAREST),
+        .ROUNDING_BITS(MANTISSA_WIDTH+1)
+    ) result_rounder_block (
         .non_rounded_exponent(non_rounded_exponent),
         .non_rounded_mantissa(non_rounded_mantissa),
         .rounding_bits(additional_mantissa_bits),
@@ -100,7 +104,7 @@ module floating_point_multiplier
 
     // Perform actual multiplication operation
 
-    always @(*) begin
+    always_comb begin
         underflow_flag = 1'b0;
         overflow_flag = 1'b0;
         invalid_operation_flag = 1'b0;
@@ -169,7 +173,7 @@ module floating_point_multiplier
                 // Then the result is rounded
                 out_mantissa = rounded_mantissa;
                 out_exponent = rounded_exponent;
-                overflow_flag = rounded_overflow_flag;            
+                overflow_flag = rounded_overflow_flag;
             end
 
             out = {out_sign, out_exponent, out_mantissa};

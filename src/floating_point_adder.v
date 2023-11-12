@@ -6,10 +6,10 @@
 `include "result_rounder.v"
 
 module floating_point_adder
-    #(parameter EXPONENT_WIDTH = 8,
-      parameter MANTISSA_WIDTH = 23,
-      parameter ROUND_TO_NEAREST = 1, // 0: round to zero (chopping last bits), 1: round to nearest
-      parameter ROUNDING_BITS = 3 // Number of bits to use for rounding, should always be larger than 1, even for ROUND_TO_NEAREST = 0
+    #(parameter int EXPONENT_WIDTH = 8,
+      parameter int MANTISSA_WIDTH = 23,
+      parameter int ROUND_TO_NEAREST = 1, // 0: round to zero (chopping last bits), 1: round to nearest
+      parameter int ROUNDING_BITS = 3 // Number of bits to use for rounding, should always be larger than 1, even for ROUND_TO_NEAREST = 0
     ) (
         input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
         input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
@@ -24,8 +24,8 @@ module floating_point_adder
         output reg invalid_operation_flag
     );
 
-    localparam TRUE_ROUNDING_BITS = ROUNDING_BITS * ROUND_TO_NEAREST;
-    localparam FLOAT_BIT_WIDTH = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
+    localparam int TrueRoundingBits = ROUNDING_BITS * ROUND_TO_NEAREST;
+    localparam int FloatBitWidth = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
 
     // Unpack input floats
 
@@ -51,12 +51,12 @@ module floating_point_adder
     reg signed [EXPONENT_WIDTH+1-1:0] exponent_difference;
     reg [EXPONENT_WIDTH-1:0] abs_exponent_difference;
 
-    reg [MANTISSA_WIDTH+1+TRUE_ROUNDING_BITS-1:0] a_shifted_mantissa; // TRUE_ROUNDING_BITS extra bits for rounding
-    reg [MANTISSA_WIDTH+1+TRUE_ROUNDING_BITS-1:0] b_shifted_mantissa; // TRUE_ROUNDING_BITS extra bits for rounding
+    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] a_shifted_mantissa; // TrueRoundingBits extra bits for rounding
+    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] b_shifted_mantissa; // TrueRoundingBits extra bits for rounding
 
-    reg signed [MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS+1-1:0] summed_mantissa;
-    reg [MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS-1:0] positive_summed_mantissa;
-    reg [MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS-1:0] normalized_mantissa;
+    reg signed [MANTISSA_WIDTH+2+TrueRoundingBits+1-1:0] summed_mantissa;
+    reg [MANTISSA_WIDTH+2+TrueRoundingBits-1:0] positive_summed_mantissa;
+    reg [MANTISSA_WIDTH+2+TrueRoundingBits-1:0] normalized_mantissa;
     reg [MANTISSA_WIDTH-1:0] non_rounded_mantissa;
 
     reg [ROUNDING_BITS-1:0] additional_mantissa_bits;
@@ -66,14 +66,14 @@ module floating_point_adder
 
     // Special pre-defined values. {MANTISSA_WIDTH-1{...}} could also have been {MANTISSA_WIDTH-1{1'bX}}
     // but like this it explicitly supports the E4M3 variant.
-    wire [FLOAT_BIT_WIDTH-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};
+    wire [FloatBitWidth-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};
 
     // Leading one detection
 
-    wire [$clog2(MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS)-1:0] leading_one_pos;
-    wire has_leading_one;    
+    wire [$clog2(MANTISSA_WIDTH+2+TrueRoundingBits)-1:0] leading_one_pos;
+    wire has_leading_one;
 
-    leading_one_detector #(.WIDTH(MANTISSA_WIDTH+2+TRUE_ROUNDING_BITS)) leading_one_detector_summed_mantissa
+    leading_one_detector #(.WIDTH(MANTISSA_WIDTH+2+TrueRoundingBits)) leading_one_detector_summed_mantissa
     (
         .in(positive_summed_mantissa),
         .position(leading_one_pos),
@@ -111,8 +111,12 @@ module floating_point_adder
     reg [EXPONENT_WIDTH-1:0] rounded_exponent;
     reg rounded_overflow_flag;
 
-    result_rounder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST, ROUNDING_BITS) result_rounder_block
-    (
+    result_rounder #(
+        .EXPONENT_WIDTH(EXPONENT_WIDTH),
+        .MANTISSA_WIDTH(MANTISSA_WIDTH),
+        .ROUND_TO_NEAREST(ROUND_TO_NEAREST),
+        .ROUNDING_BITS(ROUNDING_BITS)
+    ) result_rounder_block (
         .non_rounded_exponent(temp_exponent),
         .non_rounded_mantissa(non_rounded_mantissa),
         .rounding_bits(additional_mantissa_bits),
@@ -123,7 +127,7 @@ module floating_point_adder
 
     // Perform actual addition operation
 
-    always @(*) begin
+    always_comb begin
         underflow_flag = 1'b0;
         overflow_flag = 1'b0;
         invalid_operation_flag = 1'b0;
@@ -150,16 +154,16 @@ module floating_point_adder
 
             out = {a_sign, {EXPONENT_WIDTH{1'b1}}, {MANTISSA_WIDTH{1'b0}}};
 
-            overflow_flag = 1'b1;            
+            overflow_flag = 1'b1;
         end else begin
             // Perform regular addition operation
 
             exponent_difference = a_exponent - b_exponent;
             out_sign = 1'b0;
 
-            a_shifted_mantissa = {a_implicit_leading_bit, a_mantissa} << TRUE_ROUNDING_BITS;
-            b_shifted_mantissa = {b_implicit_leading_bit, b_mantissa} << TRUE_ROUNDING_BITS;
-            
+            a_shifted_mantissa = {a_implicit_leading_bit, a_mantissa} << TrueRoundingBits;
+            b_shifted_mantissa = {b_implicit_leading_bit, b_mantissa} << TrueRoundingBits;
+
             if (exponent_difference >= 0) begin
                 $display("A exponent is bigger than B exponent");
 
@@ -193,7 +197,7 @@ module floating_point_adder
 
             // Multiply with has_leading_one to only shift if there is a leading 1
             normalized_mantissa = (positive_summed_mantissa >> (leading_one_pos-(MANTISSA_WIDTH+ROUNDING_BITS)));
-            temp_exponent = out_exponent + (MANTISSA_WIDTH+TRUE_ROUNDING_BITS-leading_one_pos);
+            temp_exponent = out_exponent + (MANTISSA_WIDTH+TrueRoundingBits-leading_one_pos);
 
             if (temp_exponent < 0) begin
                 $display("Underflow detected.");
@@ -214,7 +218,7 @@ module floating_point_adder
             // In the normal case
             end else begin
                 // These two values are fed into the result_rounder module
-                non_rounded_mantissa = normalized_mantissa[MANTISSA_WIDTH+TRUE_ROUNDING_BITS-1:TRUE_ROUNDING_BITS];
+                non_rounded_mantissa = normalized_mantissa[MANTISSA_WIDTH+TrueRoundingBits-1:TrueRoundingBits];
                 additional_mantissa_bits = normalized_mantissa[ROUNDING_BITS-1:0];
 
                 // Then the result is rounded
