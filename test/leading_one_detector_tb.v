@@ -1,6 +1,6 @@
 `include "leading_one_detector.v"
-`include "tasks.v"
-`include "defines.vh"
+`include "../test/utils/tasks.v"
+`include "../test/utils/defines.vh"
 
 module tb_leading_one_detector;
     // Parameters for the leading one detector

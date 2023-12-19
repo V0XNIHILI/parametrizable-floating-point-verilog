@@ -1,6 +1,6 @@
 `include "floating_point_adder.v"
-`include "tasks.v"
-`include "defines.vh"
+`include "../test/utils/tasks.v"
+`include "../test/utils/defines.vh"
 
 module tb_floating_point_adder;
     // Parameters for the floating-point adder
