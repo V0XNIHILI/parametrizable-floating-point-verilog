@@ -19,7 +19,7 @@ module floating_point_multiplier
         output reg invalid_operation_flag
     );
 
-    localparam int FloatBitWidth = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
+    localparam FloatBitWidth = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
 
     // Unpack input floats
 
