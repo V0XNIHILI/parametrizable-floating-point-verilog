@@ -1,5 +1,4 @@
-files=$(find "../" -type f -name "*.v")
-files+=$(find "../" -type f -name "*.sv")
+files=$(find "../" -type f \( -name "*.v" -o -name "*.vh" -o -name "*.sv" -o -name "*.svh" \))
 
 for file in $files; do
     echo "Formatting $file"
