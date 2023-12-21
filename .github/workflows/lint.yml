@@ -12,4 +12,4 @@ jobs:
     - uses: chipsalliance/verible-linter-action@main
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        extra_args: "--rules_config=.lintrules"
+        extra_args: "--rules_config=.verible-lint-rules"
