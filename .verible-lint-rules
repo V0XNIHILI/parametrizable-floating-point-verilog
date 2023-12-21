@@ -1,0 +1,6 @@
+line-length=length:500
+banned-declared-name-patterns
+numeric-format-string-style
+macro-string-concatenation
+legacy-genvar-declaration
+legacy-generate-region
