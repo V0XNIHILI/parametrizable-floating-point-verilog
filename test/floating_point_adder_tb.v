@@ -56,7 +56,7 @@ module tb_floating_point_adder;
                 subtract = 0;
 
                 #1;
-                
+
                 tasks.check_equal(32'h41100000, out); // 9.0
                  `check_flags(0, 0, 0);
             end
@@ -67,7 +67,7 @@ module tb_floating_point_adder;
                 subtract = 0;
 
                 #1;
-                
+
                 tasks.check_equal(32'h469C4633, out); // Expected: 20003.1
                  `check_flags(0, 0, 0);
             end
@@ -78,7 +78,7 @@ module tb_floating_point_adder;
                 subtract = 0;
 
                 #1;
-                
+
                 tasks.check_equal(32'h3F6E1B09, out); // Expected: 0.9301
                  `check_flags(0, 0, 0);
             end
@@ -91,7 +91,7 @@ module tb_floating_point_adder;
                 subtract = 0;
 
                 #1;
-                
+
                 tasks.check_equal(a, out); // Expected: +Inf
                 `check_flags(0, 1, 0);
             end
@@ -102,7 +102,7 @@ module tb_floating_point_adder;
                 subtract = 0;
 
                 #1;
-                
+
                 tasks.check_equal(a, out); // Expected: +Inf
                 `check_flags(0, 1, 0);
             end
@@ -113,7 +113,7 @@ module tb_floating_point_adder;
                 subtract = 0;
 
                 #1;
-                
+
                 tasks.check_equal(32'hFFC00000, out); // Expected: QNaN
                 `check_flags(0, 0, 1);
             end
@@ -124,10 +124,10 @@ module tb_floating_point_adder;
                 subtract = 1;
 
                 #1;
-                
+
                 tasks.check_equal(32'hFFC00000, out); // Expected: QNaN
                 `check_flags(0, 0, 1);
-            end            
+            end
 
             `TEST_CASE("-Inf + -Inf = -Inf") begin
                 a = 32'hFF800000; // -Inf
@@ -135,7 +135,7 @@ module tb_floating_point_adder;
                 subtract = 0;
 
                 #1;
-                
+
                 tasks.check_equal(a, out); // Expected: -Inf
                 `check_flags(0, 1, 0);
             end
@@ -145,8 +145,9 @@ module tb_floating_point_adder;
             `TEST_CASE("0.0 + 3.0 = 3.0") begin
                 a = 32'h00000000; // 0.0
                 b = 32'h40400000; // 3.0
+
                 #1;
-                
+
                 tasks.check_equal(b, out); // Expected: 3.0
                  `check_flags(0, 0, 0);
             end
@@ -154,8 +155,9 @@ module tb_floating_point_adder;
             `TEST_CASE("120 + 0.0 = 120.0") begin
                 a = 32'h42F00000; // 120.0
                 b = 32'h00000000; // 0.0
+
                 #1;
-                
+
                 tasks.check_equal(a, out); // Expected: 12.0
                  `check_flags(0, 0, 0);
             end
@@ -163,8 +165,9 @@ module tb_floating_point_adder;
             `TEST_CASE("QNaN + 0.0 = QNaN") begin
                 a = 32'hFFC00000; // QNaN
                 b = 32'h00000000; // 0.0
+
                 #1;
-                
+
                 tasks.check_equal(a, out); // Expected: QNaN
                 `check_flags(0, 0, 1);
             end
@@ -172,8 +175,9 @@ module tb_floating_point_adder;
             `TEST_CASE("SNaN + 0.0 = QNaN") begin
                 a = 32'hFFA00000; // SNaN
                 b = 32'h00000000; // 0.0
+
                 #1;
-                
+
                 tasks.check_equal(32'hFFC00000, out); // Expected: QNaN
                 `check_flags(0, 0, 1);
             end
@@ -181,12 +185,13 @@ module tb_floating_point_adder;
             `TEST_CASE("+0 + -0 = +0") begin
                 a = 32'h00000000; // +0
                 b = 32'h80000000; // -0
+
                 #1;
-                
+
                 tasks.check_equal(a, out); // Expected: +0
                  `check_flags(0, 0, 0);
             end
-        end        
+        end
 
         `ROUND_UP
     end
