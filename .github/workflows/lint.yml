@@ -13,3 +13,11 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         extra_args: "--rules_config=.verible-lint-rules"
+        paths: |
+          ./src
+          ./test
+        extensions: |
+          .sv
+          .v
+          .vh
+          .svh
