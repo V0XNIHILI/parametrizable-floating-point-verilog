@@ -1,19 +1,19 @@
 `ifndef __RESULT_ROUNDER_V__
 `define __RESULT_ROUNDER_V__
 
-module result_rounder
-    #(parameter int EXPONENT_WIDTH = 8,
-      parameter int MANTISSA_WIDTH = 23,
-      parameter int ROUND_TO_NEAREST = 1, // 0: round to zero (chopping last bits), 1: round to nearest
-      parameter int ROUNDING_BITS = 3 // Number of bits to use for rounding, should always be larger than 1, even for ROUND_TO_NEAREST = 0
-    ) (
-        input [EXPONENT_WIDTH-1:0] non_rounded_exponent,
-        input [MANTISSA_WIDTH-1:0] non_rounded_mantissa,
-        input [ROUNDING_BITS-1:0] rounding_bits,
-        output reg [EXPONENT_WIDTH-1:0] rounded_exponent,
-        output reg [MANTISSA_WIDTH-1:0] rounded_mantissa,
-        output reg overflow_flag
-    );
+module result_rounder #(
+    parameter int EXPONENT_WIDTH = 8,
+    parameter int MANTISSA_WIDTH = 23,
+    parameter int ROUND_TO_NEAREST = 1,  // 0: round to zero (chopping last bits), 1: round to nearest
+    parameter int ROUNDING_BITS = 3  // Number of bits to use for rounding, should always be larger than 1, even for ROUND_TO_NEAREST = 0
+) (
+    input [EXPONENT_WIDTH-1:0] non_rounded_exponent,
+    input [MANTISSA_WIDTH-1:0] non_rounded_mantissa,
+    input [ROUNDING_BITS-1:0] rounding_bits,
+    output reg [EXPONENT_WIDTH-1:0] rounded_exponent,
+    output reg [MANTISSA_WIDTH-1:0] rounded_mantissa,
+    output reg overflow_flag
+);
 
     reg is_halfway;
 
@@ -23,7 +23,7 @@ module result_rounder
         rounded_exponent = non_rounded_exponent;
 
         if (ROUND_TO_NEAREST == 1) begin
-            is_halfway = rounding_bits == {1'b1, {(ROUNDING_BITS-1){1'b0}}};
+            is_halfway = rounding_bits == {1'b1, {(ROUNDING_BITS - 1) {1'b0}}};
 
             // If the additonal mantissa bits are exactly halfway and if the last bit of the mantissa is 1
             // OR

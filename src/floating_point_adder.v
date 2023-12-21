@@ -5,24 +5,24 @@
 `include "leading_one_detector.v"
 `include "result_rounder.v"
 
-module floating_point_adder
-    #(parameter int EXPONENT_WIDTH = 8,
-      parameter int MANTISSA_WIDTH = 23,
-      parameter int ROUND_TO_NEAREST = 1, // 0: round to zero (chopping last bits), 1: round to nearest
-      parameter int ROUNDING_BITS = 3 // Number of bits to use for rounding, should always be larger than 1, even for ROUND_TO_NEAREST = 0
-    ) (
-        input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
-        input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
-        output reg [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] out,
+module floating_point_adder #(
+    parameter int EXPONENT_WIDTH = 8,
+    parameter int MANTISSA_WIDTH = 23,
+    parameter int ROUND_TO_NEAREST = 1,  // 0: round to zero (chopping last bits), 1: round to nearest
+    parameter int ROUNDING_BITS = 3  // Number of bits to use for rounding, should always be larger than 1, even for ROUND_TO_NEAREST = 0
+) (
+    input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
+    input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
+    output reg [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] out,
 
-        // Subtration flag
-        input subtract,
+    // Subtration flag
+    input subtract,
 
-        // Exception flags
-        output reg underflow_flag,
-        output reg overflow_flag,
-        output reg invalid_operation_flag
-    );
+    // Exception flags
+    output reg underflow_flag,
+    output reg overflow_flag,
+    output reg invalid_operation_flag
+);
 
     localparam int TrueRoundingBits = ROUNDING_BITS * ROUND_TO_NEAREST;
     localparam int FloatBitWidth = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
@@ -51,8 +51,8 @@ module floating_point_adder
     reg signed [EXPONENT_WIDTH+1-1:0] exponent_difference;
     reg [EXPONENT_WIDTH-1:0] abs_exponent_difference;
 
-    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] a_shifted_mantissa; // TrueRoundingBits extra bits for rounding
-    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] b_shifted_mantissa; // TrueRoundingBits extra bits for rounding
+    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] a_shifted_mantissa;  // TrueRoundingBits extra bits for rounding
+    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] b_shifted_mantissa;  // TrueRoundingBits extra bits for rounding
 
     reg signed [MANTISSA_WIDTH+2+TrueRoundingBits+1-1:0] summed_mantissa;
     reg [MANTISSA_WIDTH+2+TrueRoundingBits-1:0] positive_summed_mantissa;
@@ -66,15 +66,16 @@ module floating_point_adder
 
     // Special pre-defined values. {MANTISSA_WIDTH-1{...}} could also have been {MANTISSA_WIDTH-1{1'bX}}
     // but like this it explicitly supports the E4M3 variant.
-    wire [FloatBitWidth-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH-1){is_E4M3 ? 1'b1 : 1'b0}}};
+    wire [FloatBitWidth-1:0] quiet_nan = {1'b1, {EXPONENT_WIDTH{1'b1}}, 1'b1, {(MANTISSA_WIDTH - 1) {is_E4M3 ? 1'b1 : 1'b0}}};
 
     // Leading one detection
 
     wire [$clog2(MANTISSA_WIDTH+2+TrueRoundingBits)-1:0] leading_one_pos;
     wire has_leading_one;
 
-    leading_one_detector #(.WIDTH(MANTISSA_WIDTH+2+TrueRoundingBits)) leading_one_detector_summed_mantissa
-    (
+    leading_one_detector #(
+        .WIDTH(MANTISSA_WIDTH + 2 + TrueRoundingBits)
+    ) leading_one_detector_summed_mantissa (
         .in(positive_summed_mantissa),
         .position(leading_one_pos),
         .has_leading_one(has_leading_one)
@@ -87,8 +88,10 @@ module floating_point_adder
     wire is_signaling_nan_a, is_signaling_nan_b;
     wire is_quiet_nan_a, is_quiet_nan_b;
 
-    is_special_float #(.EXPONENT_WIDTH(EXPONENT_WIDTH), .MANTISSA_WIDTH(MANTISSA_WIDTH)) is_special_float_a
-    (
+    is_special_float #(
+        .EXPONENT_WIDTH(EXPONENT_WIDTH),
+        .MANTISSA_WIDTH(MANTISSA_WIDTH)
+    ) is_special_float_a (
         .a(a),
         .is_infinite(is_a_infinite),
         .is_zero(is_a_zero),
@@ -96,8 +99,10 @@ module floating_point_adder
         .is_quiet_nan(is_quiet_nan_a)
     );
 
-    is_special_float #(.EXPONENT_WIDTH(EXPONENT_WIDTH), .MANTISSA_WIDTH(MANTISSA_WIDTH)) is_special_float_b
-    (
+    is_special_float #(
+        .EXPONENT_WIDTH(EXPONENT_WIDTH),
+        .MANTISSA_WIDTH(MANTISSA_WIDTH)
+    ) is_special_float_b (
         .a(b),
         .is_infinite(is_b_infinite),
         .is_zero(is_b_zero),
@@ -140,24 +145,26 @@ module floating_point_adder
             if ((is_signaling_nan_a || is_signaling_nan_b) || ((is_quiet_nan_a && (!is_signaling_nan_b && !is_quiet_nan_b)) || (is_quiet_nan_b && (!is_signaling_nan_a && !is_quiet_nan_a)))) begin
                 invalid_operation_flag = 1'b1;
             end
+        end else
         // Cover: -Inf + +Inf = QNaN and +Inf - +Inf = QNaN
-        end else if ((is_a_infinite && is_b_infinite) && ((!(a_sign && b_sign) && subtract) || (a_sign && !b_sign))) begin
+        if ((is_a_infinite && is_b_infinite) && ((!(a_sign && b_sign) && subtract) || (a_sign && !b_sign))) begin
             $display("Result is QNaN due to the fact that two opposite infinities were added.");
 
             out = quiet_nan;
 
             invalid_operation_flag = 1'b1;
+        end else
         // Handle two special cases that otherwise are not correctly covered by the logic in the else block;
         // -Inf + -Inf = -Inf and +Inf + +Inf = +Inf
-        end else if ((is_a_infinite && is_b_infinite) && !subtract && a_sign == b_sign) begin
+        if ((is_a_infinite && is_b_infinite) && !subtract && a_sign == b_sign) begin
             $display("Overflow detected.");
 
             out = {a_sign, {EXPONENT_WIDTH{1'b1}}, {MANTISSA_WIDTH{1'b0}}};
 
             overflow_flag = 1'b1;
-        end else begin
-            // Perform regular addition operation
-
+        end else
+        // Perform regular addition operation
+        begin
             exponent_difference = a_exponent - b_exponent;
             out_sign = 1'b0;
 
@@ -196,8 +203,8 @@ module floating_point_adder
             positive_summed_mantissa = summed_mantissa;
 
             // Multiply with has_leading_one to only shift if there is a leading 1
-            normalized_mantissa = (positive_summed_mantissa >> (leading_one_pos-(MANTISSA_WIDTH+ROUNDING_BITS)));
-            temp_exponent = out_exponent + (MANTISSA_WIDTH+TrueRoundingBits-leading_one_pos);
+            normalized_mantissa = (positive_summed_mantissa >> (leading_one_pos - (MANTISSA_WIDTH + ROUNDING_BITS)));
+            temp_exponent = out_exponent + (MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos);
 
             if (temp_exponent < 0) begin
                 $display("Underflow detected.");
@@ -215,8 +222,9 @@ module floating_point_adder
                 out_mantissa = {MANTISSA_WIDTH{1'b0}};
 
                 overflow_flag = 1'b1;
+            end else
             // In the normal case
-            end else begin
+            begin
                 // These two values are fed into the result_rounder module
                 non_rounded_mantissa = normalized_mantissa[MANTISSA_WIDTH+TrueRoundingBits-1:TrueRoundingBits];
                 additional_mantissa_bits = normalized_mantissa[ROUNDING_BITS-1:0];
