@@ -16,3 +16,8 @@ work
 
 # Bender
 Bender.local
+
+# CocoTB
+__pycache__
+sim_build
+results.xml
