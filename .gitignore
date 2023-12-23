@@ -21,3 +21,6 @@ Bender.local
 __pycache__
 sim_build
 results.xml
+
+# Verilator
+obj_dir
