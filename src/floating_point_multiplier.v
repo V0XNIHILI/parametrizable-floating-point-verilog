@@ -72,7 +72,8 @@ module floating_point_multiplier #(
         .is_infinite(is_a_infinite),
         .is_zero(is_a_zero),
         .is_signaling_nan(is_signaling_nan_a),
-        .is_quiet_nan(is_quiet_nan_a)
+        .is_quiet_nan(is_quiet_nan_a),
+        .is_subnormal()
     );
 
     is_special_float #(
@@ -83,14 +84,15 @@ module floating_point_multiplier #(
         .is_infinite(is_b_infinite),
         .is_zero(is_b_zero),
         .is_signaling_nan(is_signaling_nan_b),
-        .is_quiet_nan(is_quiet_nan_b)
+        .is_quiet_nan(is_quiet_nan_b),
+        .is_subnormal()
     );
 
     // Rounding
 
-    reg [MANTISSA_WIDTH-1:0] rounded_mantissa;
-    reg [EXPONENT_WIDTH-1:0] rounded_exponent;
-    reg rounded_overflow_flag;
+    wire [MANTISSA_WIDTH-1:0] rounded_mantissa;
+    wire [EXPONENT_WIDTH-1:0] rounded_exponent;
+    wire rounded_overflow_flag;
 
     result_rounder #(
         .EXPONENT_WIDTH(EXPONENT_WIDTH),
@@ -112,6 +114,18 @@ module floating_point_multiplier #(
         underflow_flag = 1'b0;
         overflow_flag = 1'b0;
         invalid_operation_flag = 1'b0;
+
+        // We set these to avoid latch inference for Verilators but in fact these are not used in this path
+        out_sign = 1'bx;
+        out_exponent = {EXPONENT_WIDTH{1'bx}};
+        out_mantissa = {MANTISSA_WIDTH{1'bx}};
+        non_rounded_mantissa = {MANTISSA_WIDTH{1'bx}};
+        a_mul_b_mantissa = {((MANTISSA_WIDTH+1)*2){1'bx}};
+        additional_mantissa_bits = {(MANTISSA_WIDTH+1){1'bx}};
+        is_halfway = 1'bx;
+        a_mul_b_exponent = {(EXPONENT_WIDTH+2){1'bx}};
+        non_rounded_exponent = {EXPONENT_WIDTH{1'bx}};
+        leading_one_is_MSB = 1'bx;
 
         // TODO: handle subnormal numbers
         // TODO: make sure that all operations of special values are readily handled by the current code
