@@ -28,11 +28,11 @@ module leading_one_detector #(
 
                 $display("Found leading one at position %d", position);
 
-                `ifdef __ICARUS__
-                    stop_bit = 1'b1;
-                `else
-                    break;
-                `endif
+`ifdef __ICARUS__
+                stop_bit = 1'b1;
+`else
+                break;
+`endif
             end
         end
     end
