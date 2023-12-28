@@ -19,7 +19,7 @@ jobs:
           pip install -r requirements.txt;
       - name: Install Verilator
         run: |
-            apt-get install verilator
+          sudo apt-get install verilator
     #   - name: Lint with Ruff  
     #     run: |  
     #       pip install ruff  
