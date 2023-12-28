@@ -141,7 +141,7 @@ module floating_point_adder #(
         overflow_flag = 1'b0;
         invalid_operation_flag = 1'b0;
 
-        // We set these to avoid latch inference for Verilators but in fact these are not used in this path
+        // We set these to avoid latch inference for Verilator but in fact these are not used in this path
         out_sign = 1'bx;
         out_exponent = {EXPONENT_WIDTH{1'bx}};
         out_mantissa = {MANTISSA_WIDTH{1'bx}};
@@ -166,8 +166,12 @@ module floating_point_adder #(
                 invalid_operation_flag = 1'b1;
             end
         end else
-        // Cover: -Inf + +Inf = QNaN and +Inf - +Inf = QNaN
-        if ((is_a_infinite && is_b_infinite) && ((!(a_sign && b_sign) && subtract) || (a_sign && !b_sign))) begin
+        // Cover:
+        // -Inf + +Inf = QNaN
+        // -Inf - -Inf = QNaN
+        // +Inf - +Inf = QNaN
+        // +Inf + -Inf = QNaN
+        if ((is_a_infinite && is_b_infinite) && ((a_sign && !b_sign && !subtract) || (a_sign && b_sign && subtract) || (!a_sign && !b_sign && subtract) || (!a_sign && b_sign && !subtract))) begin
             $display("Result is QNaN due to the fact that two opposite infinities were added.");
 
             out = quiet_nan;
@@ -223,9 +227,10 @@ module floating_point_adder #(
             // At this line, summed_mantissa is always positive
             positive_summed_mantissa = summed_mantissa[MANTISSA_WIDTH+2+TrueRoundingBits-1:0];
 
-            // Multiply with has_leading_one to only shift if there is a leading 1
-            normalized_mantissa = (positive_summed_mantissa >> (leading_one_pos - (MANTISSA_WIDTH + ROUNDING_BITS)));
-            temp_exponent = out_exponent + (MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos);
+            // Multiply with leading_one_pos to only shift if there is a leading 1
+            normalized_mantissa = has_leading_one ? (positive_summed_mantissa >> (leading_one_pos - (MANTISSA_WIDTH + ROUNDING_BITS))) : positive_summed_mantissa;
+            // In case there is no leading one, it means that the out_exponent is zero (for example when a = 0)
+            temp_exponent = has_leading_one ? out_exponent + (MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos) : 0;
 
             if (temp_exponent < 0) begin
                 $display("Underflow detected.");

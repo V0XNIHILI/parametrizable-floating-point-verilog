@@ -16,9 +16,10 @@ async def check_input_combo(dut, a, b, subtract, expected, flags, assert_message
 
         await Timer(1, units="ns")
         assert_flags(dut, flags)
-        print(f"{dut.out.value} == {expected}")
         assert dut.out.value == expected, assert_message
 
+# TODO: test rounding bits
+# TODO: test rounding or not
 
 @cocotb.test()
 async def test_normal_numbers(dut):
@@ -36,8 +37,8 @@ async def test_infinity(dut):
 
     await check_input_combo(dut, PLUS_INF, 0x40400000, False, PLUS_INF, (0, 1, 0), "+Inf + 3.0 != +Inf")
     await check_input_combo(dut, PLUS_INF, PLUS_INF, False, PLUS_INF, (0, 1, 0), "+Inf + +Inf != +Inf")
-    # await check_input_combo(dut, NEG_INF, PLUS_INF, False, QNAN, (0, 0, 1), "-Inf + +Inf != QNaN")
-    # await check_input_combo(dut, NEG_INF, PLUS_INF, True, QNAN, (0, 0, 1), "+Inf - +Inf != QNaN")
+    await check_input_combo(dut, NEG_INF, PLUS_INF, False, QNAN, (0, 0, 1), "-Inf + +Inf != QNaN")
+    await check_input_combo(dut, PLUS_INF, NEG_INF, True, QNAN, (0, 0, 1), "+Inf - +Inf != QNaN")
     await check_input_combo(dut, NEG_INF, NEG_INF, False, NEG_INF, (0, 1, 0), "-Inf + -Inf = -Inf")
 
 
@@ -52,5 +53,5 @@ async def test_zero(dut):
     await check_input_combo(dut, 0x42F00000, ZERO, False, 0x42F00000, (0, 0, 0), "120 + 0.0 != 120.0")
     await check_input_combo(dut, QNAN, ZERO, False, QNAN, (0, 0, 1), "QNaN + 0.0 != QNaN")
     await check_input_combo(dut, SNAN, ZERO, False, QNAN, (0, 0, 1), "SNaN + 0.0 != QNaN")
-    # await check_input_combo(dut, ZERO, NEG_ZERO, False, ZERO, (0, 0, 0), "+0 + -0 != +0")
-    # await check_input_combo(dut, ZERO, ZERO, False, ZERO, (0, 0, 0), "+0 + +0 != +0")
+    await check_input_combo(dut, ZERO, NEG_ZERO, False, ZERO, (0, 0, 0), "+0 + -0 != +0")
+    await check_input_combo(dut, ZERO, ZERO, False, ZERO, (0, 0, 0), "+0 + +0 != +0")
