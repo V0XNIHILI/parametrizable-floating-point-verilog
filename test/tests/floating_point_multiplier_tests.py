@@ -32,10 +32,13 @@ async def test_denormalized_numbers(dut):
 
 @cocotb.test()
 async def test_infinity(dut):
-    await check_input_combo(dut, 0x7F800000, 0x40400000, 0x7F800000, (0, 1, 0), "+Inf * 3.0 != +Inf")
-    await check_input_combo(dut, 0x7F800000, 0x7F800000, 0x7F800000, (0, 1, 0), "+Inf * +Inf != +Inf")
-    await check_input_combo(dut, 0xFF800000, 0x7F800000, 0xFF800000, (0, 1, 0), "-Inf * +Inf != -Inf")
-    await check_input_combo(dut, 0xFF800000, 0xFF800000, 0x7F800000, (0, 1, 0), "-Inf * -Inf != +Inf")
+    PLUS_INF = 0x7F800000
+    NEG_INF = 0xFF800000
+
+    await check_input_combo(dut, PLUS_INF, 0x40400000, PLUS_INF, (0, 1, 0), "+Inf * 3.0 != +Inf")
+    await check_input_combo(dut, PLUS_INF, PLUS_INF, PLUS_INF, (0, 1, 0), "+Inf * +Inf != +Inf")
+    await check_input_combo(dut, NEG_INF, PLUS_INF, NEG_INF, (0, 1, 0), "-Inf * +Inf != -Inf")
+    await check_input_combo(dut, NEG_INF, NEG_INF, PLUS_INF, (0, 1, 0), "-Inf * -Inf != +Inf")
 
 
 @cocotb.test()
