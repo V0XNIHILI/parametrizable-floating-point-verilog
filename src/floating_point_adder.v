@@ -49,10 +49,10 @@ module floating_point_adder #(
 
     // Temporary variables
     reg signed [EXPONENT_WIDTH+1-1:0] exponent_difference;
+    reg [EXPONENT_WIDTH+1-1:0] positive_exponent; // Extra step required for taking the correct number of bits in Verilator
     reg [EXPONENT_WIDTH-1:0] abs_exponent_difference;
 
-    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] a_shifted_mantissa;  // TrueRoundingBits extra bits for rounding
-    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] b_shifted_mantissa;  // TrueRoundingBits extra bits for rounding
+    reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] a_shifted_mantissa, b_shifted_mantissa;  // TrueRoundingBits extra bits for rounding
 
     reg signed [MANTISSA_WIDTH+2+TrueRoundingBits+1-1:0] summed_mantissa;
     reg [MANTISSA_WIDTH+2+TrueRoundingBits-1:0] positive_summed_mantissa;
@@ -76,7 +76,7 @@ module floating_point_adder #(
     leading_one_detector #(
         .WIDTH(MANTISSA_WIDTH + 2 + TrueRoundingBits)
     ) leading_one_detector_summed_mantissa (
-        .in(positive_summed_mantissa),
+        .value(positive_summed_mantissa),
         .position(leading_one_pos),
         .has_leading_one(has_leading_one)
     );
@@ -96,7 +96,8 @@ module floating_point_adder #(
         .is_infinite(is_a_infinite),
         .is_zero(is_a_zero),
         .is_signaling_nan(is_signaling_nan_a),
-        .is_quiet_nan(is_quiet_nan_a)
+        .is_quiet_nan(is_quiet_nan_a),
+        .is_subnormal()
     );
 
     is_special_float #(
@@ -107,7 +108,8 @@ module floating_point_adder #(
         .is_infinite(is_b_infinite),
         .is_zero(is_b_zero),
         .is_signaling_nan(is_signaling_nan_b),
-        .is_quiet_nan(is_quiet_nan_b)
+        .is_quiet_nan(is_quiet_nan_b),
+        .is_subnormal()
     );
 
     // Rounding
@@ -122,7 +124,9 @@ module floating_point_adder #(
         .ROUND_TO_NEAREST(ROUND_TO_NEAREST),
         .ROUNDING_BITS(ROUNDING_BITS)
     ) result_rounder_block (
-        .non_rounded_exponent(temp_exponent),
+        // We need to remove the extra bits from temp_exponent, which
+        // are normally used for overflow detection.
+        .non_rounded_exponent(temp_exponent[EXPONENT_WIDTH-1:0]),
         .non_rounded_mantissa(non_rounded_mantissa),
         .rounding_bits(additional_mantissa_bits),
         .rounded_exponent(rounded_exponent),
@@ -136,6 +140,22 @@ module floating_point_adder #(
         underflow_flag = 1'b0;
         overflow_flag = 1'b0;
         invalid_operation_flag = 1'b0;
+
+        // We set these to avoid latch inference for Verilators but in fact these are not used in this path
+        out_sign = 1'bx;
+        out_exponent = {EXPONENT_WIDTH{1'bx}};
+        out_mantissa = {MANTISSA_WIDTH{1'bx}};
+        non_rounded_mantissa = {MANTISSA_WIDTH{1'bx}};
+        positive_summed_mantissa = {(MANTISSA_WIDTH+2+TrueRoundingBits){1'bx}};
+        normalized_mantissa = {(MANTISSA_WIDTH+2+TrueRoundingBits){1'bx}};
+        exponent_difference = {(EXPONENT_WIDTH+1){1'bx}};
+        positive_exponent = {(EXPONENT_WIDTH+1){1'bx}};
+        abs_exponent_difference = {EXPONENT_WIDTH{1'bx}};
+        a_shifted_mantissa = {(MANTISSA_WIDTH+1+TrueRoundingBits){1'bx}};
+        b_shifted_mantissa = {(MANTISSA_WIDTH+1+TrueRoundingBits){1'bx}};
+        summed_mantissa = {(MANTISSA_WIDTH+2+TrueRoundingBits+1){1'bx}};
+        additional_mantissa_bits = {ROUNDING_BITS{1'bx}};
+        temp_exponent = {(EXPONENT_WIDTH+2){1'bx}};
 
         if (is_signaling_nan_a || is_signaling_nan_b || is_quiet_nan_a || is_quiet_nan_b) begin
             $display("Result is QNaN due to one or both of the operands being NaN.");
@@ -174,13 +194,14 @@ module floating_point_adder #(
             if (exponent_difference >= 0) begin
                 $display("A exponent is bigger than B exponent");
 
-                abs_exponent_difference = exponent_difference;
+                abs_exponent_difference = exponent_difference[EXPONENT_WIDTH-1:0];
                 out_exponent = a_exponent;
                 b_shifted_mantissa = b_shifted_mantissa >> abs_exponent_difference;
             end else begin
                 $display("B exponent is bigger than A exponent");
 
-                abs_exponent_difference = -exponent_difference;
+                positive_exponent = -exponent_difference;
+                abs_exponent_difference = positive_exponent[EXPONENT_WIDTH-1:0];
                 out_exponent = b_exponent;
                 a_shifted_mantissa = a_shifted_mantissa >> abs_exponent_difference;
             end
@@ -200,7 +221,7 @@ module floating_point_adder #(
             end
 
             // At this line, summed_mantissa is always positive
-            positive_summed_mantissa = summed_mantissa;
+            positive_summed_mantissa = summed_mantissa[MANTISSA_WIDTH+2+TrueRoundingBits-1:0];
 
             // Multiply with has_leading_one to only shift if there is a leading 1
             normalized_mantissa = (positive_summed_mantissa >> (leading_one_pos - (MANTISSA_WIDTH + ROUNDING_BITS)));
