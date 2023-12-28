@@ -5,7 +5,7 @@ import pytest
 from cocotb_test.simulator import run
 
 
-@pytest.mark.parametrize("parameters", [{"EXPONENT_WIDTH": "8", "MANTISSA_WIDTH": "23", "ROUND_TO_NEAREST": "1"}])
+@pytest.mark.parametrize("parameters", [{"EXPONENT_WIDTH": "8", "MANTISSA_WIDTH": "23", "ROUND_TO_NEAREST": "1"}, {"EXPONENT_WIDTH": "11", "MANTISSA_WIDTH": "52", "ROUND_TO_NEAREST": "1"}])
 def test_floating_point_multiplier(parameters):
     module_name = "floating_point_multiplier"
 
@@ -24,4 +24,4 @@ def test_floating_point_multiplier(parameters):
 
 
 if __name__ == "__main__":
-    test_floating_point_multiplier(None)
+    test_floating_point_multiplier({"EXPONENT_WIDTH": "11", "MANTISSA_WIDTH": "52", "ROUND_TO_NEAREST": "1"})
