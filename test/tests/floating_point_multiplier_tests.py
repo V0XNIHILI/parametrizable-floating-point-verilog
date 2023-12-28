@@ -2,6 +2,10 @@ import cocotb
 from cocotb.triggers import Timer
 
 
+TOTAL_RANDOM_FLOATS = 1000
+POWERS = [-300, -12, -6, -3, 0, 6, 12, 24]
+
+
 def assert_flags(dut, flags):
     assert dut.underflow_flag.value == flags[0], "Underflow flag is not correct"
     assert dut.overflow_flag.value == flags[1], "Overflow flag is not correct"
@@ -60,3 +64,40 @@ async def test_zero(dut):
     await check_input_combo(dut, 0x42F00000, ZERO, ZERO, (0, 0, 0), "120.0 * 0.0 != 0.0")
     await check_input_combo(dut, QNAN, ZERO, QNAN, (0, 0, 1), "QNaN * 0.0 != QNaN")
     await check_input_combo(dut, SNAN, ZERO, QNAN, (0, 0, 1), "SNaN * 0.0 != QNaN")
+
+@cocotb.test()
+async def test_random_floats(dut):
+    import random
+    import numpy as np
+
+    for power in POWERS:
+        scale = 10 ** power
+
+        for _ in range(TOTAL_RANDOM_FLOATS):
+            underflow_flag = 0
+            overflow_flag = 0
+            invalid_operation_flag = 0
+
+            a = random.uniform(-scale, scale)
+            b = random.uniform(-scale, scale)
+
+            result = np.float32(a) * np.float32(b)
+
+            a_str = '{:032b}'.format(np.float32(a).view(np.uint32).item())
+            b_str = '{:032b}'.format(np.float32(b).view(np.uint32).item())
+            result_str = '{:032b}'.format(np.float32(result).view(np.uint32).item())
+
+            a_int = int(a_str, 2)
+            b_int = int(b_str, 2)
+            result_int = int(result_str, 2)
+
+            if result == np.inf or result == -np.inf:
+                overflow_flag = True
+            elif result == np.nan:
+                invalid_operation_flag = True
+            elif a != 0.0 and b != 0 and result == 0:
+                underflow_flag = True
+
+            flags = (underflow_flag, overflow_flag, invalid_operation_flag)
+
+            await check_input_combo(dut, a_int,b_int, result_int, flags, f"{a} * {b} != {result}")
