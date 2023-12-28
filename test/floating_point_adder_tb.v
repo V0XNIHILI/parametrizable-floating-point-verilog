@@ -145,6 +145,7 @@ module tb_floating_point_adder;
             `TEST_CASE("0.0 + 3.0 = 3.0") begin
                 a = 32'h00000000; // 0.0
                 b = 32'h40400000; // 3.0
+                subtract = 0;
 
                 #1;
 
@@ -155,6 +156,7 @@ module tb_floating_point_adder;
             `TEST_CASE("120 + 0.0 = 120.0") begin
                 a = 32'h42F00000; // 120.0
                 b = 32'h00000000; // 0.0
+                subtract = 0;
 
                 #1;
 
@@ -165,6 +167,7 @@ module tb_floating_point_adder;
             `TEST_CASE("QNaN + 0.0 = QNaN") begin
                 a = 32'hFFC00000; // QNaN
                 b = 32'h00000000; // 0.0
+                subtract = 0;
 
                 #1;
 
@@ -175,6 +178,7 @@ module tb_floating_point_adder;
             `TEST_CASE("SNaN + 0.0 = QNaN") begin
                 a = 32'hFFA00000; // SNaN
                 b = 32'h00000000; // 0.0
+                subtract = 0;
 
                 #1;
 
@@ -185,6 +189,7 @@ module tb_floating_point_adder;
             `TEST_CASE("+0 + -0 = +0") begin
                 a = 32'h00000000; // +0
                 b = 32'h80000000; // -0
+                subtract = 0;
 
                 #1;
 
