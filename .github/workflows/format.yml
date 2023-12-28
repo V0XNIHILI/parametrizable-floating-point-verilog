@@ -8,7 +8,7 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v4
     - uses: chipsalliance/verible-formatter-action@main
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
