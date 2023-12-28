@@ -8,7 +8,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v4
     - uses: chipsalliance/verible-linter-action@main
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
