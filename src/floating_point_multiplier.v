@@ -4,6 +4,8 @@
 `include "is_special_float.v"
 `include "result_rounder.v"
 
+// TODO: add rounding with only ROUNDING_BITS number of bits
+
 module floating_point_multiplier #(
     parameter int EXPONENT_WIDTH   = 8,
     parameter int MANTISSA_WIDTH   = 23,
