@@ -16,9 +16,8 @@ frozen: false
 sources:
   - target: test
     files:
-      - test/floating_point_adder_tb.v
-      - test/floating_point_multiplier_tb.v
-      - test/leading_one_detector_tb.v
+      - test/tests/*_tests.py
+      - test/test_*.py
 
   - target: rtl
     files:
