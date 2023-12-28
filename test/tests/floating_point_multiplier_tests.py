@@ -8,13 +8,14 @@ def assert_flags(dut, flags):
     assert dut.invalid_operation_flag.value == flags[2], "Invalid operation flag is not correct"
 
 
-async def check_input_combo(dut, a, b, expected, flags, assert_message):
-    dut.a.value = a
-    dut.b.value = b
+async def check_input_combo(dut, a, b, expected, flags, assert_message, check_both_ways=True):
+    for (a_entry, b_entry) in [(a, b), (b, a)] if check_both_ways else [(a, b)]:
+        dut.a.value = a_entry
+        dut.b.value = b_entry
 
-    await Timer(1, units="ns")
-    assert_flags(dut, flags)
-    assert dut.out.value == expected, assert_message
+        await Timer(1, units="ns")
+        assert_flags(dut, flags)
+        assert dut.out.value == expected, assert_message
 
 
 @cocotb.test()
