@@ -49,7 +49,7 @@ module floating_point_adder #(
 
     // Temporary variables
     reg signed [EXPONENT_WIDTH+1-1:0] exponent_difference;
-    reg [EXPONENT_WIDTH+1-1:0] positive_exponent; // Extra step required for taking the correct number of bits in Verilator
+    reg [EXPONENT_WIDTH+1-1:0] positive_exponent;  // Extra step required for taking the correct number of bits in Verilator
     reg [EXPONENT_WIDTH-1:0] abs_exponent_difference;
 
     reg [MANTISSA_WIDTH+1+TrueRoundingBits-1:0] a_shifted_mantissa, b_shifted_mantissa;  // TrueRoundingBits extra bits for rounding
@@ -146,16 +146,16 @@ module floating_point_adder #(
         out_exponent = {EXPONENT_WIDTH{1'bx}};
         out_mantissa = {MANTISSA_WIDTH{1'bx}};
         non_rounded_mantissa = {MANTISSA_WIDTH{1'bx}};
-        positive_summed_mantissa = {(MANTISSA_WIDTH+2+TrueRoundingBits){1'bx}};
-        normalized_mantissa = {(MANTISSA_WIDTH+2+TrueRoundingBits){1'bx}};
-        exponent_difference = {(EXPONENT_WIDTH+1){1'bx}};
-        positive_exponent = {(EXPONENT_WIDTH+1){1'bx}};
+        positive_summed_mantissa = {(MANTISSA_WIDTH + 2 + TrueRoundingBits) {1'bx}};
+        normalized_mantissa = {(MANTISSA_WIDTH + 2 + TrueRoundingBits) {1'bx}};
+        exponent_difference = {(EXPONENT_WIDTH + 1) {1'bx}};
+        positive_exponent = {(EXPONENT_WIDTH + 1) {1'bx}};
         abs_exponent_difference = {EXPONENT_WIDTH{1'bx}};
-        a_shifted_mantissa = {(MANTISSA_WIDTH+1+TrueRoundingBits){1'bx}};
-        b_shifted_mantissa = {(MANTISSA_WIDTH+1+TrueRoundingBits){1'bx}};
-        summed_mantissa = {(MANTISSA_WIDTH+2+TrueRoundingBits+1){1'bx}};
+        a_shifted_mantissa = {(MANTISSA_WIDTH + 1 + TrueRoundingBits) {1'bx}};
+        b_shifted_mantissa = {(MANTISSA_WIDTH + 1 + TrueRoundingBits) {1'bx}};
+        summed_mantissa = {(MANTISSA_WIDTH + 2 + TrueRoundingBits + 1) {1'bx}};
         additional_mantissa_bits = {ROUNDING_BITS{1'bx}};
-        temp_exponent = {(EXPONENT_WIDTH+2){1'bx}};
+        temp_exponent = {(EXPONENT_WIDTH + 2) {1'bx}};
 
         if (is_signaling_nan_a || is_signaling_nan_b || is_quiet_nan_a || is_quiet_nan_b) begin
             $display("Result is QNaN due to one or both of the operands being NaN.");

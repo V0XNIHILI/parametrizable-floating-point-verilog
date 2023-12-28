@@ -120,10 +120,10 @@ module floating_point_multiplier #(
         out_exponent = {EXPONENT_WIDTH{1'bx}};
         out_mantissa = {MANTISSA_WIDTH{1'bx}};
         non_rounded_mantissa = {MANTISSA_WIDTH{1'bx}};
-        a_mul_b_mantissa = {((MANTISSA_WIDTH+1)*2){1'bx}};
-        additional_mantissa_bits = {(MANTISSA_WIDTH+1){1'bx}};
+        a_mul_b_mantissa = {((MANTISSA_WIDTH + 1) * 2) {1'bx}};
+        additional_mantissa_bits = {(MANTISSA_WIDTH + 1) {1'bx}};
         is_halfway = 1'bx;
-        a_mul_b_exponent = {(EXPONENT_WIDTH+2){1'bx}};
+        a_mul_b_exponent = {(EXPONENT_WIDTH + 2) {1'bx}};
         non_rounded_exponent = {EXPONENT_WIDTH{1'bx}};
         leading_one_is_MSB = 1'bx;
 
