@@ -60,10 +60,13 @@ module floating_point_adder #(
     reg [MANTISSA_WIDTH-1:0] non_rounded_mantissa;
 
     reg [RoundingBits-1:0] additional_mantissa_bits;
+    reg negate_exponent_update;
     reg signed [EXPONENT_WIDTH+2-1:0] temp_exponent;
 
+    // Extra statement used to avoid WIDTHTRUNC from Verilator
+    wire [32-1:0] int_exponent_change_from_mantissa = MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos;
     // TODO: check that the used bit width is enough/correct
-    wire signed [3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0] exponent_change_from_mantissa = MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos;
+    wire signed [3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0] exponent_change_from_mantissa = int_exponent_change_from_mantissa[3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0];
 
     wire is_E4M3 = EXPONENT_WIDTH == 4 && MANTISSA_WIDTH == 3;
 
@@ -159,6 +162,7 @@ module floating_point_adder #(
         summed_mantissa = {(MANTISSA_WIDTH + 2 + TrueRoundingBits + 1) {1'bx}};
         additional_mantissa_bits = {RoundingBits{1'bx}};
         temp_exponent = {(EXPONENT_WIDTH + 2) {1'bx}};
+        negate_exponent_update = 1'bx;
 
         if (is_signaling_nan_a || is_signaling_nan_b || is_quiet_nan_a || is_quiet_nan_b) begin
             $display("Result is QNaN due to one or both of the operands being NaN.");
@@ -221,6 +225,7 @@ module floating_point_adder #(
             if (a_sign == b_sign) begin
                 summed_mantissa = a_shifted_mantissa + b_shifted_mantissa;
                 out_sign = a_sign;
+                negate_exponent_update = 1'b0;
             end else begin
                 if (a_sign == 1'b1) begin
                     summed_mantissa = b_shifted_mantissa - a_shifted_mantissa;
@@ -236,6 +241,8 @@ module floating_point_adder #(
                     summed_mantissa = -summed_mantissa;
                     out_sign = 1'b1;
                 end
+
+                negate_exponent_update = 1'b1;
             end
 
             // At this line, summed_mantissa is always positive
@@ -246,7 +253,9 @@ module floating_point_adder #(
             normalized_mantissa = leading_one_pos >= (MANTISSA_WIDTH + RoundingBits) ? positive_summed_mantissa >> (leading_one_pos - (MANTISSA_WIDTH + RoundingBits)) : positive_summed_mantissa << ((MANTISSA_WIDTH + RoundingBits) - leading_one_pos);
             // In case there is no leading one, it means that the mantissa is zero (for example when a = 0)
             // This weird if-statement with if exponent_change_from_mantissa is larger than zero is required because else the subtraction does not work correctly
-            temp_exponent = has_leading_one ? (exponent_change_from_mantissa >= 0 ? out_exponent + (-2 * (b_sign ^ a_sign) + 1) * exponent_change_from_mantissa : out_exponent - (-2 * (b_sign ^ a_sign) + 1) * exponent_change_from_mantissa) : 0;
+            // Furthermore, it is XORed with negate_exponent_update to make sure that the subtraction is done at the right moment, else sometimes
+            // when dealing with negative + positive numbers, the temp_exponent is not correct.
+            temp_exponent = has_leading_one ? ((exponent_change_from_mantissa >= 0) ^ negate_exponent_update ? out_exponent + exponent_change_from_mantissa : out_exponent - exponent_change_from_mantissa) : 0;
 
             if (temp_exponent < 0) begin
                 $display("Underflow detected.");
