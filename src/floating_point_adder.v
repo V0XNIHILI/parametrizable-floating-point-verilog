@@ -62,6 +62,9 @@ module floating_point_adder #(
     reg [ROUNDING_BITS-1:0] additional_mantissa_bits;
     reg signed [EXPONENT_WIDTH+2-1:0] temp_exponent;
 
+    // TODO: check that the used bit width is enough/correct
+    wire signed [3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0] exponent_change_from_mantissa = MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos;
+
     wire is_E4M3 = EXPONENT_WIDTH == 4 && MANTISSA_WIDTH == 3;
 
     // Special pre-defined values. {MANTISSA_WIDTH-1{...}} could also have been {MANTISSA_WIDTH-1{1'bX}}
@@ -166,7 +169,7 @@ module floating_point_adder #(
                 invalid_operation_flag = 1'b1;
             end
         end else
-        // Cover:
+        // Cover the following cases:
         // -Inf + +Inf = QNaN
         // -Inf - -Inf = QNaN
         // +Inf - +Inf = QNaN
@@ -195,12 +198,17 @@ module floating_point_adder #(
             a_shifted_mantissa = {a_implicit_leading_bit, a_mantissa} << TrueRoundingBits;
             b_shifted_mantissa = {b_implicit_leading_bit, b_mantissa} << TrueRoundingBits;
 
-            if (exponent_difference >= 0) begin
+            if (exponent_difference > 0) begin
                 $display("A exponent is bigger than B exponent");
 
                 abs_exponent_difference = exponent_difference[EXPONENT_WIDTH-1:0];
                 out_exponent = a_exponent;
                 b_shifted_mantissa = b_shifted_mantissa >> abs_exponent_difference;
+            end else if (exponent_difference == 0) begin
+                $display("A exponent is equal to B exponent");
+
+                abs_exponent_difference = 0;
+                out_exponent = a_exponent;
             end else begin
                 $display("B exponent is bigger than A exponent");
 
@@ -213,24 +221,37 @@ module floating_point_adder #(
             if (a_sign == 1'b0 && b_sign == 1'b0) begin
                 summed_mantissa = a_shifted_mantissa + b_shifted_mantissa;
                 out_sign = 1'b0;
-            end else if (a_sign == 1'b1) begin
-                summed_mantissa = b_shifted_mantissa - a_shifted_mantissa;
-            end else if (b_sign == 1'b1) begin
-                summed_mantissa = a_shifted_mantissa - b_shifted_mantissa;
-            end
-
-            if ((a_sign || b_sign) && summed_mantissa < 0) begin
-                summed_mantissa = -summed_mantissa;
+            end else if (a_sign == 1'b1 && b_sign == 1'b1) begin
+                summed_mantissa = a_shifted_mantissa + b_shifted_mantissa;
                 out_sign = 1'b1;
+            end else begin
+                if (a_sign == 1'b1) begin
+                    summed_mantissa = b_shifted_mantissa - a_shifted_mantissa;
+                end else
+                // Effectively: 'else if (b_sign == 1'b1)'
+                begin
+                    summed_mantissa = a_shifted_mantissa - b_shifted_mantissa;
+                end
+
+                if (summed_mantissa < 0) begin
+                    $display("Result is negative due to mantissa summation being negative.");
+
+                    summed_mantissa = -summed_mantissa;
+                    out_sign = 1'b1;
+                end
             end
 
             // At this line, summed_mantissa is always positive
             positive_summed_mantissa = summed_mantissa[MANTISSA_WIDTH+2+TrueRoundingBits-1:0];
 
+            // TODO: fix rounding issue in negative negative and positive positive cases (+1 missing)
+
             // Multiply with leading_one_pos to only shift if there is a leading 1
-            normalized_mantissa = has_leading_one ? (positive_summed_mantissa >> (leading_one_pos - (MANTISSA_WIDTH + ROUNDING_BITS))) : positive_summed_mantissa;
-            // In case there is no leading one, it means that the out_exponent is zero (for example when a = 0)
-            temp_exponent = has_leading_one ? out_exponent + (MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos) : 0;
+            // Separate shift statements to handle the case of a shift with a negative amount (i.e., shift the other direction)
+            normalized_mantissa = leading_one_pos >= (MANTISSA_WIDTH + ROUNDING_BITS) ? positive_summed_mantissa >> (leading_one_pos - (MANTISSA_WIDTH + ROUNDING_BITS)) : positive_summed_mantissa << ((MANTISSA_WIDTH + ROUNDING_BITS) - leading_one_pos);
+            // In case there is no leading one, it means that the mantissa is zero (for example when a = 0)
+            // This weird if-statement with if exponent_change_from_mantissa is larger than zero is required because else the subtraction does not work correctly
+            temp_exponent = has_leading_one ? (exponent_change_from_mantissa >= 0 ? out_exponent + exponent_change_from_mantissa : out_exponent - exponent_change_from_mantissa) : 0;
 
             if (temp_exponent < 0) begin
                 $display("Underflow detected.");
@@ -251,6 +272,8 @@ module floating_point_adder #(
             end else
             // In the normal case
             begin
+                $display("No overflow or underflow detected.");
+
                 // These two values are fed into the result_rounder module
                 non_rounded_mantissa = normalized_mantissa[MANTISSA_WIDTH+TrueRoundingBits-1:TrueRoundingBits];
                 additional_mantissa_bits = normalized_mantissa[ROUNDING_BITS-1:0];
