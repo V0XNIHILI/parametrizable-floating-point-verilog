@@ -2,5 +2,5 @@ files=$(find "../" -type f \( -name "*.v" -o -name "*.vh" -o -name "*.sv" -o -na
 
 for file in $files; do
     echo "Formatting $file"
-    verible-verilog-format --flagfile=../.verible-format-flags $file
+    verible-verilog-format --flagfile=../.verible-format-flags --inplace $file
 done
