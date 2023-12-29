@@ -5,8 +5,8 @@ import pytest
 from cocotb_test.simulator import run
 
 
-@pytest.mark.parametrize("parameters", [{"EXPONENT_WIDTH": "8", "MANTISSA_WIDTH": "23", "ROUND_TO_NEAREST": "1"}])
-def test_floating_point_multiplier(parameters):
+@pytest.mark.parametrize("parameters", [{"EXPONENT_WIDTH": "8", "MANTISSA_WIDTH": "23", "ROUND_TO_NEAREST": "1"}, {"EXPONENT_WIDTH": "11", "MANTISSA_WIDTH": "52", "ROUND_TO_NEAREST": "1"}])
+def test_floating_point_adder(parameters):
     module_name = "floating_point_adder"
 
     file_dir = Path(__file__).resolve().parent
@@ -19,9 +19,10 @@ def test_floating_point_multiplier(parameters):
         module=f"tests.{module_name}_tests",
         parameters=parameters,
         # Dont fail on UNOPTFLAT due to the fact that Verilator thinks there is a loop in the design, while there is not.
-        compile_args=[f"+incdir+{source_dir}", '-Wno-WIDTHEXPAND', '-Wno-UNOPTFLAT'] #  '--x-assign unique', '--x-initial unique'
+        compile_args=[f"+incdir+{source_dir}", '-Wno-WIDTHEXPAND', '-Wno-UNOPTFLAT', '-Wno-WIDTHTRUNC'], #  '--x-assign unique', '--x-initial unique'
+        extra_args=["--trace", "--trace-structs", "--coverage"],
     )
 
 
 if __name__ == "__main__":
-    test_floating_point_multiplier(None)
+    test_floating_point_adder(None)
