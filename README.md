@@ -47,15 +47,15 @@ Compared to most other public floating point implementations in Verilog, this ve
 
     // Can optionally disable rounding (enabled by default)
 
-    localparam ROUND_TO_NEAREST = 0; // 0 = chop bits, 1 = round to nearest
-    floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST) fp_adder_no_rounding ( ... );
+    localparam ROUND_TO_NEAREST_TIES_TO_EVEN = 0; // 0 = chop bits, 1 = round to nearest
+    floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST_TIES_TO_EVEN) fp_adder_no_rounding ( ... );
 
     // Can change number of bits for rounding (default is 3)
 
     localparam ROUNDING_BITS = 2;
-    localparam ROUND_TO_NEAREST = 1;
+    localparam ROUND_TO_NEAREST_TIES_TO_EVEN = 1;
     
-    floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST, ROUNDING_BITS) fp_adder_2bit_rounding ( ... );
+    floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST_TIES_TO_EVEN, ROUNDING_BITS) fp_adder_2bit_rounding ( ... );
 
 // end of your own module instantiation
 ```
@@ -90,8 +90,8 @@ Compared to most other public floating point implementations in Verilog, this ve
 
     // Can optionally disable rounding (enabled by default)
 
-    localparam ROUND_TO_NEAREST = 0; // 0 = chop bits, 1 = round to nearest
-    floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST) fp_multiplier_no_rounding ( ... );
+    localparam ROUND_TO_NEAREST_TIES_TO_EVEN = 0; // 0 = chop bits, 1 = round to nearest
+    floating_point_adder #(EXPONENT_WIDTH, MANTISSA_WIDTH, ROUND_TO_NEAREST_TIES_TO_EVEN) fp_multiplier_no_rounding ( ... );
 
 // end of your own module instantiation
 ```

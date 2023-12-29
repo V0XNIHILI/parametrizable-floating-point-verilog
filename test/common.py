@@ -2,21 +2,21 @@ import numpy as np
 
 
 def is_IEEE_754_32_bit_float(dut):
-    if int(dut.EXPONENT_WIDTH) == 8 and int(dut.MANTISSA_WIDTH) == 23 and int(dut.ROUND_TO_NEAREST) == 1:
+    if int(dut.EXPONENT_WIDTH) == 8 and int(dut.MANTISSA_WIDTH) == 23 and int(dut.ROUND_TO_NEAREST_TIES_TO_EVEN) == 1:
         return True
     
     return False
 
 
 def is_IEEE_754_64_bit_float(dut):
-    if int(dut.EXPONENT_WIDTH) == 11 and int(dut.MANTISSA_WIDTH) == 52 and int(dut.ROUND_TO_NEAREST) == 1:
+    if int(dut.EXPONENT_WIDTH) == 11 and int(dut.MANTISSA_WIDTH) == 52 and int(dut.ROUND_TO_NEAREST_TIES_TO_EVEN) == 1:
         return True
     
     return False
 
 
 def is_16_bit_float(dut):
-    if int(dut.EXPONENT_WIDTH) == 5 and int(dut.MANTISSA_WIDTH) == 10 and int(dut.ROUND_TO_NEAREST) == 1:
+    if int(dut.EXPONENT_WIDTH) == 5 and int(dut.MANTISSA_WIDTH) == 10 and int(dut.ROUND_TO_NEAREST_TIES_TO_EVEN) == 1:
         return True
     
     return False
