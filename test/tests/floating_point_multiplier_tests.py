@@ -1,28 +1,10 @@
 import cocotb
 from cocotb.triggers import Timer
 
+from common import is_IEEE_754_32_bit_float, is_IEEE_754_64_bit_float, assert_flags
 
-TOTAL_RANDOM_FLOATS = 1000
+TOTAL_RANDOM_FLOATS = 10000
 POWERS = [-300, -12, -6, -3, 0, 6, 12, 24]
-
-def is_IEEE_754_32_bit_float(dut):
-    if int(dut.EXPONENT_WIDTH) == 8 and int(dut.MANTISSA_WIDTH) == 23 and int(dut.ROUND_TO_NEAREST) == 1:
-        return True
-    
-    return False
-
-
-def is_IEEE_754_64_bit_float(dut):
-    if int(dut.EXPONENT_WIDTH) == 11 and int(dut.MANTISSA_WIDTH) == 52 and int(dut.ROUND_TO_NEAREST) == 1:
-        return True
-    
-    return False
-
-
-def assert_flags(dut, flags):
-    assert dut.underflow_flag.value == flags[0], "Underflow flag is not correct"
-    assert dut.overflow_flag.value == flags[1], "Overflow flag is not correct"
-    assert dut.invalid_operation_flag.value == flags[2], "Invalid operation flag is not correct"
 
 
 async def check_input_combo(dut, a, b, expected, flags, assert_message, check_both_ways=True):
@@ -42,16 +24,20 @@ async def test_normal_numbers(dut):
         await check_input_combo(dut, 0x410B3333, 0x3E99999A, 0x40270A3E, (0, 0, 0), "8.7 * 0.3 != 2.6100001")
         await check_input_combo(dut, 0x469C4600, 0x3DCCCCCD, 0x44FA099A, (0, 0, 0), "20003.0 * 0.1 != 2000.3")
         await check_input_combo(dut, 0x38D1B717, 0x3F6E147B, 0x38C308FE, (0, 0, 0), "0.0001 * 0.93 != 9.2999995E-5")
+    elif is_IEEE_754_64_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
     else:
-        assert True, "This test is not implemented for this floating point format"
+        assert False, "This test is not implemented for this floating point format"
 
 
 @cocotb.test()
 async def test_denormalized_numbers(dut):
     if is_IEEE_754_32_bit_float(dut):
         await check_input_combo(dut, 0x00000001, 0x00000001, 0x00000000, (1, 0, 0), "1.1754944E-38 * 1.1754944E-38 != 0.0")
+    elif is_IEEE_754_64_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
     else:
-        assert True, "This test is not implemented for this floating point format"
+        assert False, "This test is not implemented for this floating point format"
 
 
 @cocotb.test()
@@ -64,8 +50,10 @@ async def test_infinity(dut):
         await check_input_combo(dut, PLUS_INF, PLUS_INF, PLUS_INF, (0, 1, 0), "+Inf * +Inf != +Inf")
         await check_input_combo(dut, NEG_INF, PLUS_INF, NEG_INF, (0, 1, 0), "-Inf * +Inf != -Inf")
         await check_input_combo(dut, NEG_INF, NEG_INF, PLUS_INF, (0, 1, 0), "-Inf * -Inf != +Inf")
+    elif is_IEEE_754_64_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
     else:
-        assert True, "This test is not implemented for this floating point format"
+        assert False, "This test is not implemented for this floating point format"
 
 
 @cocotb.test()
@@ -76,8 +64,11 @@ async def test_nan(dut):
 
         await check_input_combo(dut, QNAN, 0x40800000, QNAN, (0, 0, 1), "QNaN * 4.0 != QNaN")
         await check_input_combo(dut, SNAN, 0x40800000, QNAN, (0, 0, 1), "SNaN * 4.0 != QNaN")
+    elif is_IEEE_754_64_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
     else:
-        assert True, "This test is not implemented for this floating point format"
+        assert False, "This test is not implemented for this floating point format"
+
 
 @cocotb.test()
 async def test_zero(dut):
@@ -90,8 +81,11 @@ async def test_zero(dut):
         await check_input_combo(dut, 0x42F00000, ZERO, ZERO, (0, 0, 0), "120.0 * 0.0 != 0.0")
         await check_input_combo(dut, QNAN, ZERO, QNAN, (0, 0, 1), "QNaN * 0.0 != QNaN")
         await check_input_combo(dut, SNAN, ZERO, QNAN, (0, 0, 1), "SNaN * 0.0 != QNaN")
+    elif is_IEEE_754_64_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
     else:
-        assert True, "This test is not implemented for this floating point format"
+        assert False, "This test is not implemented for this floating point format"
+
 
 @cocotb.test()
 async def test_random_floats(dut):
@@ -125,7 +119,7 @@ async def test_random_floats(dut):
                 result_str = '{:064b}'.format(np.float64(result).view(np.uint64).item())
             else:
                 skip_test = True
-                assert True, "This test is not implemented for this floating point format"
+                assert False, "This test is not implemented for this floating point format"
 
             if not skip_test:
                 a_int = int(a_str, 2)
