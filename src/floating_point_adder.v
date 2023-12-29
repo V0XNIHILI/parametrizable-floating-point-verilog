@@ -6,9 +6,9 @@
 `include "result_rounder.v"
 
 module floating_point_adder #(
-    parameter int EXPONENT_WIDTH = 8,
-    parameter int MANTISSA_WIDTH = 23,
-    parameter int ROUND_TO_NEAREST = 1  // 0: round to zero (chopping last bits), 1: round to nearest
+    parameter int EXPONENT_WIDTH   = 8,
+    parameter int MANTISSA_WIDTH   = 23,
+    parameter int ROUND_TO_NEAREST = 1    // 0: round to zero (chopping last bits), 1: round to nearest
 ) (
     input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
     input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
@@ -246,7 +246,7 @@ module floating_point_adder #(
             normalized_mantissa = leading_one_pos >= (MANTISSA_WIDTH + RoundingBits) ? positive_summed_mantissa >> (leading_one_pos - (MANTISSA_WIDTH + RoundingBits)) : positive_summed_mantissa << ((MANTISSA_WIDTH + RoundingBits) - leading_one_pos);
             // In case there is no leading one, it means that the mantissa is zero (for example when a = 0)
             // This weird if-statement with if exponent_change_from_mantissa is larger than zero is required because else the subtraction does not work correctly
-            temp_exponent = has_leading_one ? (exponent_change_from_mantissa >= 0 ? out_exponent + (-2*(b_sign^a_sign)+1) * exponent_change_from_mantissa : out_exponent - (-2*(b_sign^a_sign)+1) * exponent_change_from_mantissa) : 0;
+            temp_exponent = has_leading_one ? (exponent_change_from_mantissa >= 0 ? out_exponent + (-2 * (b_sign ^ a_sign) + 1) * exponent_change_from_mantissa : out_exponent - (-2 * (b_sign ^ a_sign) + 1) * exponent_change_from_mantissa) : 0;
 
             if (temp_exponent < 0) begin
                 $display("Underflow detected.");

@@ -14,6 +14,7 @@ module result_rounder #(
     output reg [MANTISSA_WIDTH-1:0] rounded_mantissa,
     output reg overflow_flag
 );
+    // Read-up on rounding: https://ee.usc.edu/~redekopp/cs356/slides/CS356Unit3_FP.pdf
 
     reg is_halfway;
 
