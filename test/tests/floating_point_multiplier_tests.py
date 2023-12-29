@@ -1,7 +1,7 @@
 import cocotb
 from cocotb.triggers import Timer
 
-from common import is_IEEE_754_32_bit_float, is_IEEE_754_64_bit_float, assert_flags
+from common import is_IEEE_754_32_bit_float, is_IEEE_754_64_bit_float, is_16_bit_float, get_bin_from_float_operation, assert_flags
 
 TOTAL_RANDOM_FLOATS = 10000
 POWERS = [-300, -12, -6, -3, 0, 6, 12, 24]
@@ -13,7 +13,7 @@ async def check_input_combo(dut, a, b, expected, flags, assert_message, check_bo
         dut.b.value = b_entry
 
         await Timer(1, units="ns")
-        assert_flags(dut, flags)
+        assert_flags(dut, flags, assert_message)
         assert dut.out.value == expected, assert_message
 
 
@@ -24,8 +24,8 @@ async def test_normal_numbers(dut):
         await check_input_combo(dut, 0x410B3333, 0x3E99999A, 0x40270A3E, (0, 0, 0), "8.7 * 0.3 != 2.6100001")
         await check_input_combo(dut, 0x469C4600, 0x3DCCCCCD, 0x44FA099A, (0, 0, 0), "20003.0 * 0.1 != 2000.3")
         await check_input_combo(dut, 0x38D1B717, 0x3F6E147B, 0x38C308FE, (0, 0, 0), "0.0001 * 0.93 != 9.2999995E-5")
-    elif is_IEEE_754_64_bit_float(dut):
-        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
+    elif is_IEEE_754_64_bit_float(dut) or is_16_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats or 16-bit floats"
     else:
         assert False, "This test is not implemented for this floating point format"
 
@@ -34,8 +34,8 @@ async def test_normal_numbers(dut):
 async def test_denormalized_numbers(dut):
     if is_IEEE_754_32_bit_float(dut):
         await check_input_combo(dut, 0x00000001, 0x00000001, 0x00000000, (1, 0, 0), "1.1754944E-38 * 1.1754944E-38 != 0.0")
-    elif is_IEEE_754_64_bit_float(dut):
-        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
+    elif is_IEEE_754_64_bit_float(dut) or is_16_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats or 16-bit floats"
     else:
         assert False, "This test is not implemented for this floating point format"
 
@@ -50,8 +50,8 @@ async def test_infinity(dut):
         await check_input_combo(dut, PLUS_INF, PLUS_INF, PLUS_INF, (0, 1, 0), "+Inf * +Inf != +Inf")
         await check_input_combo(dut, NEG_INF, PLUS_INF, NEG_INF, (0, 1, 0), "-Inf * +Inf != -Inf")
         await check_input_combo(dut, NEG_INF, NEG_INF, PLUS_INF, (0, 1, 0), "-Inf * -Inf != +Inf")
-    elif is_IEEE_754_64_bit_float(dut):
-        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
+    elif is_IEEE_754_64_bit_float(dut) or is_16_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats or 16-bit floats"
     else:
         assert False, "This test is not implemented for this floating point format"
 
@@ -64,8 +64,8 @@ async def test_nan(dut):
 
         await check_input_combo(dut, QNAN, 0x40800000, QNAN, (0, 0, 1), "QNaN * 4.0 != QNaN")
         await check_input_combo(dut, SNAN, 0x40800000, QNAN, (0, 0, 1), "SNaN * 4.0 != QNaN")
-    elif is_IEEE_754_64_bit_float(dut):
-        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
+    elif is_IEEE_754_64_bit_float(dut) or is_16_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats or 16-bit floats"
     else:
         assert False, "This test is not implemented for this floating point format"
 
@@ -81,8 +81,8 @@ async def test_zero(dut):
         await check_input_combo(dut, 0x42F00000, ZERO, ZERO, (0, 0, 0), "120.0 * 0.0 != 0.0")
         await check_input_combo(dut, QNAN, ZERO, QNAN, (0, 0, 1), "QNaN * 0.0 != QNaN")
         await check_input_combo(dut, SNAN, ZERO, QNAN, (0, 0, 1), "SNaN * 0.0 != QNaN")
-    elif is_IEEE_754_64_bit_float(dut):
-        assert True, "This test is not implemented for 64-bit IEEE 754 floats"
+    elif is_IEEE_754_64_bit_float(dut) or is_16_bit_float(dut):
+        assert True, "This test is not implemented for 64-bit IEEE 754 floats or 16-bit floats"
     else:
         assert False, "This test is not implemented for this floating point format"
 
@@ -106,17 +106,11 @@ async def test_random_floats(dut):
             skip_test = False
 
             if is_IEEE_754_32_bit_float(dut):
-                result = np.float32(a) * np.float32(b)
-
-                a_str = '{:032b}'.format(np.float32(a).view(np.uint32).item())
-                b_str = '{:032b}'.format(np.float32(b).view(np.uint32).item())
-                result_str = '{:032b}'.format(np.float32(result).view(np.uint32).item())
+                (a_str, b_str, result_str), result = get_bin_from_float_operation(a, b, '*', 32)
             elif is_IEEE_754_64_bit_float(dut):
-                result = np.float64(a) * np.float64(b)
-
-                a_str = '{:064b}'.format(np.float64(a).view(np.uint64).item())
-                b_str = '{:064b}'.format(np.float64(b).view(np.uint64).item())
-                result_str = '{:064b}'.format(np.float64(result).view(np.uint64).item())
+                (a_str, b_str, result_str), result = get_bin_from_float_operation(a, b, '*', 64)
+            elif is_16_bit_float(dut):
+                (a_str, b_str, result_str), result = get_bin_from_float_operation(a, b, '*', 16)
             else:
                 skip_test = True
                 assert False, "This test is not implemented for this floating point format"

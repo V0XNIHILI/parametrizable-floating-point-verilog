@@ -24,4 +24,4 @@ def test_floating_point_multiplier(parameters):
 
 
 if __name__ == "__main__":
-    test_floating_point_multiplier({"EXPONENT_WIDTH": "11", "MANTISSA_WIDTH": "52", "ROUND_TO_NEAREST": "1"})
+    test_floating_point_multiplier({"EXPONENT_WIDTH": "5", "MANTISSA_WIDTH": "10", "ROUND_TO_NEAREST": "1"})

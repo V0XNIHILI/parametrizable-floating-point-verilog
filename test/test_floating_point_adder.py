@@ -25,4 +25,4 @@ def test_floating_point_adder(parameters):
 
 
 if __name__ == "__main__":
-    test_floating_point_adder(None)
+    test_floating_point_adder({"EXPONENT_WIDTH": "5", "MANTISSA_WIDTH": "10", "ROUND_TO_NEAREST": "1"})
