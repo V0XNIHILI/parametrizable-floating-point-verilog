@@ -15,8 +15,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         extra_args: "--rules_config=.verible-lint-rules"
         fail_on_error: true
-        # Hard-specifying the paths and the extensions is done as otherwise
-        # it seems like the files in the ./test directory are not picked up.
         paths: |
           ./src
         extensions: |
