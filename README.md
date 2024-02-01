@@ -1,6 +1,6 @@
 # Parametrizable floating point operations in Verilog
 
-This is a small library for floating point operations in Verilog. It is based on the IEEE 754-2008 standard for floating point arithmetic. The library currently supports addition/subtraction and multiplication of floating point numbers.
+This is a small library for floating point operations in Verilog. It is based on the IEEE 754-2008 standard for floating-point arithmetic. The library currently supports addition/subtraction and multiplication of floating point numbers.
 
 Compared to most other public floating point implementations in Verilog, this version has the following features:
 
@@ -12,6 +12,12 @@ Compared to most other public floating point implementations in Verilog, this ve
     - Zeroes
 - Single cycle operation
 - Supports rounding to nearest (per official specification) or simply chopping bits
+
+
+## References
+
+- A nice IEEE-754 calculator for visualization and testing: http://weitz.de/ieee/
+- An overview of floating point exceptions: https://ieeexplore.ieee.org/document/5690343
 
 ## Usage
 
