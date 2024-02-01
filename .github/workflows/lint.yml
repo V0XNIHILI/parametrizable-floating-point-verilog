@@ -18,7 +18,6 @@ jobs:
         # it seems like the files in the ./test directory are not picked up.
         paths: |
           ./src
-          ./test
         extensions: |
           .sv
           .v
