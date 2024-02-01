@@ -5,9 +5,9 @@
 `include "result_rounder.v"
 
 module floating_point_multiplier #(
-    parameter int EXPONENT_WIDTH   = 8,
-    parameter int MANTISSA_WIDTH   = 23,
-    parameter int ROUND_TO_NEAREST_TIES_TO_EVEN = 1    // 0: round to zero (chopping last bits), 1: round to nearest
+    parameter int EXPONENT_WIDTH = 8,
+    parameter int MANTISSA_WIDTH = 23,
+    parameter int ROUND_TO_NEAREST_TIES_TO_EVEN = 1  // 0: round to zero (chopping last bits), 1: round to nearest
 ) (
     input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
     input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
