@@ -66,11 +66,7 @@ module floating_point_adder #(
     // Extra statement used to avoid WIDTHTRUNC from Verilator
     wire [32-1:0] int_exponent_change_from_mantissa = MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos;
     // TODO: check that the used bit width is enough/correct
-    wire signed [3+$clog2(
-MANTISSA_WIDTH
-)+$clog2(
-TrueRoundingBits
-)-1:0] exponent_change_from_mantissa = int_exponent_change_from_mantissa[3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0];
+    wire signed [3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0] exponent_change_from_mantissa = int_exponent_change_from_mantissa[3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0];
 
     wire is_E4M3 = EXPONENT_WIDTH == 4 && MANTISSA_WIDTH == 3;
 
@@ -247,7 +243,7 @@ TrueRoundingBits
                 end
 
                 negate_exponent_update = 1'b1;
-            end         
+            end
 
             // At this line, summed_mantissa is always positive
             positive_summed_mantissa = summed_mantissa[MANTISSA_WIDTH+2+TrueRoundingBits-1:0];
