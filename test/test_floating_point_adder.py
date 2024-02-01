@@ -1,27 +1,15 @@
-from pathlib import Path
-
 import pytest
 
-from cocotb_test.simulator import run
-
+from utils import run_module_test
 
 @pytest.mark.parametrize("parameters", [{"EXPONENT_WIDTH": "8", "MANTISSA_WIDTH": "23", "ROUND_TO_NEAREST_TIES_TO_EVEN": "1"}, {"EXPONENT_WIDTH": "11", "MANTISSA_WIDTH": "52", "ROUND_TO_NEAREST_TIES_TO_EVEN": "1"}])
 def test_floating_point_adder(parameters):
-    module_name = "floating_point_adder"
-
-    file_dir = Path(__file__).resolve().parent
-    source_dir = str(file_dir / ".." / "src")
-
-    run(
-        simulator="verilator",
-        verilog_sources=[f"{source_dir}/{module_name}.v"],
-        toplevel=module_name,
-        module=f"tests.{module_name}_tests",
-        parameters=parameters,
-        # Dont fail on UNOPTFLAT due to the fact that Verilator thinks there is a loop in the design, while there is not.
-        compile_args=[f"+incdir+{source_dir}", '-Wno-WIDTHEXPAND', '-Wno-UNOPTFLAT', '-Wno-WIDTHTRUNC'], #  '--x-assign unique', '--x-initial unique'
-        extra_args=["--trace", "--trace-structs", "--coverage"],
-    )
+    return run_module_test("floating_point_adder",
+                parameters=parameters,
+                include_src_dir=True,
+                # Dont fail on UNOPTFLAT due to the fact that Verilator thinks there is a loop in the design, while there is not.
+                compile_args=['-Wno-UNOPTFLAT', '-Wno-WIDTHTRUNC'],
+                create_vcd=True)
 
 
 if __name__ == "__main__":
