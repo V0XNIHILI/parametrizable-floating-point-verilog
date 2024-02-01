@@ -6,9 +6,9 @@
 `include "result_rounder.v"
 
 module floating_point_adder #(
-    parameter int EXPONENT_WIDTH   = 8,
-    parameter int MANTISSA_WIDTH   = 23,
-    parameter int ROUND_TO_NEAREST_TIES_TO_EVEN = 1    // 0: round to zero (chopping last bits), 1: round to nearest
+    parameter int EXPONENT_WIDTH = 8,
+    parameter int MANTISSA_WIDTH = 23,
+    parameter int ROUND_TO_NEAREST_TIES_TO_EVEN = 1  // 0: round to zero (chopping last bits), 1: round to nearest
 ) (
     input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
     input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
@@ -66,7 +66,11 @@ module floating_point_adder #(
     // Extra statement used to avoid WIDTHTRUNC from Verilator
     wire [32-1:0] int_exponent_change_from_mantissa = MANTISSA_WIDTH + TrueRoundingBits - leading_one_pos;
     // TODO: check that the used bit width is enough/correct
-    wire signed [3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0] exponent_change_from_mantissa = int_exponent_change_from_mantissa[3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0];
+    wire signed [3+$clog2(
+MANTISSA_WIDTH
+)+$clog2(
+TrueRoundingBits
+)-1:0] exponent_change_from_mantissa = int_exponent_change_from_mantissa[3+$clog2(MANTISSA_WIDTH)+$clog2(TrueRoundingBits)-1:0];
 
     wire is_E4M3 = EXPONENT_WIDTH == 4 && MANTISSA_WIDTH == 3;
 
@@ -77,7 +81,7 @@ module floating_point_adder #(
     // Leading one detection
 
     wire [$clog2(MANTISSA_WIDTH+2+TrueRoundingBits)-1:0] leading_one_pos;
-    wire has_leading_one; 
+    wire has_leading_one;
 
     leading_one_detector #(
         .WIDTH(MANTISSA_WIDTH + 2 + TrueRoundingBits)
