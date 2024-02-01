@@ -11,6 +11,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: chipsalliance/verible-linter-action@main
       with:
+        # Not specyfing the token causes the linter action to fail entirely.
         github_token: ${{ secrets.GITHUB_TOKEN }}
         extra_args: "--rules_config=.verible-lint-rules"
         fail_on_error: true
