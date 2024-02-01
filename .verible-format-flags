@@ -1,4 +1,4 @@
 --assignment_statement_alignment=flush-left
 --indentation_spaces=4
---column_limit=500
+--column_limit=10
 --verbose
