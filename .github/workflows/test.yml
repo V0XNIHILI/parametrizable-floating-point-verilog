@@ -26,7 +26,7 @@ jobs:
       #     version: stable
       - name: Install Verilator
         run: |
-          apt-get install verilator
+          sudo apt-get install verilator
       - name: Test with pytest  
         run: |  
           pytest
