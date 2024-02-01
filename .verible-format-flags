@@ -1,4 +1,3 @@
---failsafe_success=false
 --assignment_statement_alignment=flush-left
 --indentation_spaces=4
 --column_limit=500
