@@ -11,6 +11,5 @@ jobs:
     - uses: actions/checkout@v4
     - uses: chipsalliance/verible-formatter-action@main
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
         parameters: "--flagfile=.verible-format-flags"
         fail_on_formatting_suggestions: true
