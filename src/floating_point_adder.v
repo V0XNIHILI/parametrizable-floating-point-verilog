@@ -77,7 +77,7 @@ module floating_point_adder #(
     // Leading one detection
 
     wire [$clog2(MANTISSA_WIDTH+2+TrueRoundingBits)-1:0] leading_one_pos;
-    wire has_leading_one;
+    wire has_leading_one; 
 
     leading_one_detector #(
         .WIDTH(MANTISSA_WIDTH + 2 + TrueRoundingBits)
