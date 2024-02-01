@@ -13,6 +13,6 @@ jobs:
       with:
         # Not specyfing the token causes the formatter action to fail entirely.
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        parameters: "--flagfile=.verible-format-flags --failsafe_success=false"
+        parameters: "--flagfile=.verible-format-flags"
         fail_on_formatting_suggestions: true
         files: ./**/*.{v,sv,vh,svh}
