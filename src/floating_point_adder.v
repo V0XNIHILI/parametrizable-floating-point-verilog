@@ -247,7 +247,7 @@ TrueRoundingBits
                 end
 
                 negate_exponent_update = 1'b1;
-            end
+            end         
 
             // At this line, summed_mantissa is always positive
             positive_summed_mantissa = summed_mantissa[MANTISSA_WIDTH+2+TrueRoundingBits-1:0];
