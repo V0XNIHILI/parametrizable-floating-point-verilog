@@ -24,8 +24,8 @@ def run_module_test(module_name: str, extension: str = "v", file_name: Optional[
             extra_args.append("--trace")
         else:
             raise ValueError(f"Create VCD is not supported for this ({simulator}) simulator")
-        
-    compile_args = list(set(basic_compile_args + compile_args or []))
+    
+    compile_args = list(set(basic_compile_args + (compile_args or [])))
         
     if file_name is None:
         file_name = f"{module_name}.{extension}"

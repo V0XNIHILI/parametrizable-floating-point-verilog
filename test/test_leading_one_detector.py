@@ -8,7 +8,7 @@ WIDTHS = [3, 4, 6, BASE_WIDTH, 16]
 
 @pytest.mark.parametrize("parameters", [{"WIDTH": w} for w in WIDTHS])
 def test_leading_one_detector(parameters):
-    return run_module_test("leading_one_detector",
+    run_module_test("leading_one_detector",
                            parameters=parameters,
                            use_basic_compile_args=False)
 
