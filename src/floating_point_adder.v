@@ -15,7 +15,7 @@ module floating_point_adder #(
     output reg [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] out,
 
     // Subtration flag
-    input subtract,
+    input subtract,  
 
     // Exception flags
     output reg underflow_flag,
