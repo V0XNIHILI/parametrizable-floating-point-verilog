@@ -15,13 +15,16 @@ module floating_point_adder #(
     output reg [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] out,
 
     // Subtration flag
-    input subtract,  
+    input subtract,
 
     // Exception flags
     output reg underflow_flag,
     output reg overflow_flag,
     output reg invalid_operation_flag
 );
+
+    generate;
+    endgenerate
 
     localparam int RoundingBits = MANTISSA_WIDTH;
     localparam int TrueRoundingBits = RoundingBits * ROUND_TO_NEAREST_TIES_TO_EVEN;
