@@ -42,8 +42,8 @@ module is_special_float #(
     assign is_infinite = is_E4M3 || is_E2M3 || is_E3M2 || is_E2M1 ? 1'b0 : is_exponent_ones && is_mantissa_zero;
     assign is_zero = is_exponent_zero && is_mantissa_zero;
     assign is_subnormal = is_exponent_zero && !is_mantissa_zero;
-    assign is_signaling_nan = is_E2M3 || is_E3M2 || is_E2M1 ? 1'b0 : (is_E4M3 ? is_exponent_ones && is_mantissa_ones : is_negative && is_exponent_ones && (mantissa[MANTISSA_WIDTH-1] == 1'b1));
-    assign is_quiet_nan = is_E4M3 || is_E2M3 || is_E3M2 || is_E2M1 ? 1'b0 : is_negative && is_exponent_ones && (mantissa[MANTISSA_WIDTH-1] == 1'b0) && !is_mantissa_zero;
+    assign is_signaling_nan = is_E2M3 || is_E3M2 || is_E2M1 ? 1'b0 : (is_E4M3 ? is_exponent_ones && is_mantissa_ones : is_exponent_ones && (mantissa[MANTISSA_WIDTH-1] == 1'b1));
+    assign is_quiet_nan = is_E4M3 || is_E2M3 || is_E3M2 || is_E2M1 ? 1'b0 : is_exponent_ones && (mantissa[MANTISSA_WIDTH-1] == 1'b0) && !is_mantissa_zero;
 endmodule
 
 `endif

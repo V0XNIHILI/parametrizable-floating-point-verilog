@@ -61,7 +61,9 @@ async def test_nan(dut):
     if is_IEEE_754_32_bit_float(dut):
         QNAN = 0xFFC00000
         SNAN = 0xFFA00000
+        ALSO_QNAN = 0b0_11111111_00000000000000000000001
 
+        await check_input_combo(dut, ALSO_QNAN, 0x40800000, QNAN, (0, 0, 1), "QNaN * 4.0 != QNaN")
         await check_input_combo(dut, QNAN, 0x40800000, QNAN, (0, 0, 1), "QNaN * 4.0 != QNaN")
         await check_input_combo(dut, SNAN, 0x40800000, QNAN, (0, 0, 1), "SNaN * 4.0 != QNaN")
     elif is_IEEE_754_64_bit_float(dut) or is_16_bit_float(dut):
