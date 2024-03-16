@@ -7,7 +7,8 @@
 module floating_point_multiplier #(
     parameter int EXPONENT_WIDTH = 8,
     parameter int MANTISSA_WIDTH = 23,
-    parameter int ROUND_TO_NEAREST_TIES_TO_EVEN = 1  // 0: round to zero (chopping last bits), 1: round to nearest
+    parameter int ROUND_TO_NEAREST_TIES_TO_EVEN = 1,  // 0: round to zero (chopping last bits), 1: round to nearest
+    parameter int IGNORE_SIGN_BIT_FOR_NAN = 1
 ) (
     input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
     input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
@@ -66,7 +67,8 @@ module floating_point_multiplier #(
 
     is_special_float #(
         .EXPONENT_WIDTH(EXPONENT_WIDTH),
-        .MANTISSA_WIDTH(MANTISSA_WIDTH)
+        .MANTISSA_WIDTH(MANTISSA_WIDTH),
+        .IGNORE_SIGN_BIT_FOR_NAN(IGNORE_SIGN_BIT_FOR_NAN)
     ) is_special_float_a (
         .a(a),
         .is_infinite(is_a_infinite),
@@ -78,7 +80,8 @@ module floating_point_multiplier #(
 
     is_special_float #(
         .EXPONENT_WIDTH(EXPONENT_WIDTH),
-        .MANTISSA_WIDTH(MANTISSA_WIDTH)
+        .MANTISSA_WIDTH(MANTISSA_WIDTH),
+        .IGNORE_SIGN_BIT_FOR_NAN(IGNORE_SIGN_BIT_FOR_NAN)
     ) is_special_float_b (
         .a(b),
         .is_infinite(is_b_infinite),
