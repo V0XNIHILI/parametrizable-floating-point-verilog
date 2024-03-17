@@ -9,11 +9,12 @@ module floating_point_adder #(
     parameter int EXPONENT_WIDTH = 8,
     parameter int MANTISSA_WIDTH = 23,
     parameter int ROUND_TO_NEAREST_TIES_TO_EVEN = 1,  // 0: round to zero (chopping last bits), 1: round to nearest
-    parameter int IGNORE_SIGN_BIT_FOR_NAN = 1
+    parameter int IGNORE_SIGN_BIT_FOR_NAN = 1,
+    localparam int FloatBitWidth = EXPONENT_WIDTH + MANTISSA_WIDTH + 1
 ) (
-    input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] a,
-    input [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] b,
-    output reg [EXPONENT_WIDTH+MANTISSA_WIDTH+1-1:0] out,
+    input [FloatBitWidth-1:0] a,
+    input [FloatBitWidth-1:0] b,
+    output reg [FloatBitWidth-1:0] out,
 
     // Subtraction flag
     input subtract,
@@ -26,7 +27,6 @@ module floating_point_adder #(
 
     localparam int RoundingBits = MANTISSA_WIDTH;
     localparam int TrueRoundingBits = RoundingBits * ROUND_TO_NEAREST_TIES_TO_EVEN;
-    localparam int FloatBitWidth = EXPONENT_WIDTH + MANTISSA_WIDTH + 1;
 
     // Unpack input floats
 
