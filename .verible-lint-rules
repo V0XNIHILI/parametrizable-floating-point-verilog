@@ -1,4 +1,4 @@
-line-length=length:200
+line-length=length:250
 banned-declared-name-patterns
 numeric-format-string-style
 macro-string-concatenation
