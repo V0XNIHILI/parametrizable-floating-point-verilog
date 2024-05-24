@@ -168,7 +168,7 @@ module floating_point_adder #(
         negate_exponent_update = 1'bx;
 
         if (is_signaling_nan_a || is_signaling_nan_b || is_quiet_nan_a || is_quiet_nan_b) begin
-            //$display("Result is QNaN due to one or both of the operands being NaN.");
+            // Result is QNaN due to one or both of the operands being NaN
 
             out = quiet_nan;
 
@@ -182,7 +182,7 @@ module floating_point_adder #(
         // +Inf - +Inf = QNaN
         // +Inf + -Inf = QNaN
         if ((is_a_infinite && is_b_infinite) && ((a_sign && !b_sign && !subtract) || (a_sign && b_sign && subtract) || (!a_sign && !b_sign && subtract) || (!a_sign && b_sign && !subtract))) begin
-            //$display("Result is QNaN due to the fact that two opposite infinities were added.");
+            // Result is QNaN due to the fact that two opposite infinities were added
 
             out = quiet_nan;
 
@@ -191,7 +191,7 @@ module floating_point_adder #(
         // Handle two special cases that otherwise are not correctly covered by the logic in the else block;
         // -Inf + -Inf = -Inf and +Inf + +Inf = +Inf
         if ((is_a_infinite && is_b_infinite) && !subtract && a_sign == b_sign) begin
-            //$display("Overflow detected.");
+            // Overflow detected
 
             out = {a_sign, {EXPONENT_WIDTH{1'b1}}, {MANTISSA_WIDTH{1'b0}}};
 
@@ -206,18 +206,18 @@ module floating_point_adder #(
             b_shifted_mantissa = {b_implicit_leading_bit, b_mantissa} << TrueRoundingBits;
 
             if (exponent_difference > 0) begin
-                //$display("A exponent is bigger than B exponent");
+                // A exponent is bigger than B exponent
 
                 abs_exponent_difference = exponent_difference[EXPONENT_WIDTH-1:0];
                 out_exponent = a_exponent;
                 b_shifted_mantissa = b_shifted_mantissa >> abs_exponent_difference;
             end else if (exponent_difference == 0) begin
-                //$display("A exponent is equal to B exponent");
+                // A exponent is equal to B exponent
 
                 abs_exponent_difference = 0;
                 out_exponent = a_exponent;
             end else begin
-                //$display("B exponent is bigger than A exponent");
+                // B exponent is bigger than A exponent
 
                 positive_exponent = -exponent_difference;
                 abs_exponent_difference = positive_exponent[EXPONENT_WIDTH-1:0];
@@ -239,7 +239,7 @@ module floating_point_adder #(
                 end
 
                 if (summed_mantissa < 0) begin
-                    //$display("Result is negative due to mantissa summation being negative.");
+                    // Result is negative due to mantissa summation being negative
 
                     summed_mantissa = -summed_mantissa;
                     out_sign = 1'b1;
@@ -261,7 +261,7 @@ module floating_point_adder #(
             temp_exponent = has_leading_one ? ((exponent_change_from_mantissa >= 0) ^ negate_exponent_update ? out_exponent + exponent_change_from_mantissa : out_exponent - exponent_change_from_mantissa) : 0;
 
             if (temp_exponent < 0) begin
-                //$display("Underflow detected.");
+                // Underflow detected
 
                 // Note: out_sign is already set
                 out_exponent = 0;
@@ -269,7 +269,7 @@ module floating_point_adder #(
 
                 underflow_flag = 1'b1;
             end else if (temp_exponent >= {EXPONENT_WIDTH{1'b1}}) begin
-                //$display("Overflow detected.");
+                // Overflow detected
 
                 // Note: out_sign is already set
                 out_exponent = {EXPONENT_WIDTH{1'b1}};
@@ -279,7 +279,7 @@ module floating_point_adder #(
             end else
             // In the normal case
             begin
-                //$display("No overflow or underflow detected.");
+                // No overflow or underflow detected
 
                 // These two values are fed into the result_rounder module
                 non_rounded_mantissa = normalized_mantissa[MANTISSA_WIDTH+TrueRoundingBits-1:TrueRoundingBits];
