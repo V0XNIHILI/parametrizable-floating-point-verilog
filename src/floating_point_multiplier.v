@@ -133,7 +133,7 @@ module floating_point_multiplier #(
         // TODO: make sure that all operations of special values are readily handled by the current code
 
         if (is_signaling_nan_a || is_signaling_nan_b || is_quiet_nan_a || is_quiet_nan_b) begin
-            $display("Result is QNaN due to one or both of the operands being NaN.");
+            // Result is QNaN due to one or both of the operands being NaN
 
             out = quiet_nan;
 
@@ -141,13 +141,13 @@ module floating_point_multiplier #(
                 invalid_operation_flag = 1'b1;
             end
         end else if ((is_a_zero && is_b_infinite) || (is_b_zero && is_a_infinite)) begin
-            $display("Result is QNaN due to one of the operands being zero and the other being infinite.");
+            // Result is QNaN due to one of the operands being zero and the other being infinite
 
             out = quiet_nan;
 
             invalid_operation_flag = 1'b1;
         end else begin
-            $display("Result is probably not QNaN.");
+            // Result is probably not QNaN
 
             out_sign = a_sign ^ b_sign;
             a_mul_b_mantissa = {a_implicit_leading_bit, a_mantissa} * {b_implicit_leading_bit, b_mantissa};
@@ -160,7 +160,7 @@ module floating_point_multiplier #(
             // and an underflow flag is asserted. In the second case, the exponent is zero and it
             // cannot be compensated by normalization, so there is also an underflow.
             if (a_mul_b_exponent < 0 || (a_mul_b_exponent[EXPONENT_WIDTH+1-1:0] == 0 && leading_one_is_MSB == 1'b0)) begin
-                $display("Underflow detected.");
+                // Underflow detected
 
                 // Note: out_sign is already set
                 out_exponent = 0;
@@ -173,7 +173,7 @@ module floating_point_multiplier #(
             // this value is 255. Overflow can also occur when the exponent is equal to 111...110 and
             // +1 will be done for normalization, leading to 111...111: again, overflow.
             if (a_mul_b_exponent[EXPONENT_WIDTH+1-1:0] >= {EXPONENT_WIDTH{1'b1}} || (a_mul_b_exponent[EXPONENT_WIDTH-1:0] == ({EXPONENT_WIDTH{1'b1}} - 1) && leading_one_is_MSB)) begin
-                $display("Overflow detected.");
+                // Overflow detected
 
                 // Note: out_sign is already set
                 out_exponent = {EXPONENT_WIDTH{1'b1}};
@@ -183,7 +183,7 @@ module floating_point_multiplier #(
             end else
             // In the normal case
             begin
-                $display("No overflow or underflow detected.");
+                // No overflow or underflow detected
 
                 // Note: out_sign is already set
                 // Handle the special case where one of the inputs is zero: the output exponent
