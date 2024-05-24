@@ -31,18 +31,18 @@ module result_rounder #(
             // if the additional bits are more than halfway,
             // round up
             if ((is_halfway && non_rounded_mantissa[0] == 1'b1) || (!is_halfway && rounding_bits[ROUNDING_BITS-1] == 1'b1)) begin
-                $display("Rounding up.");
+                // Rounding up
 
                 rounded_mantissa = non_rounded_mantissa + 1;
 
                 // If the mantissa has overflowed
                 if (rounded_mantissa == 0) begin
-                    $display("Mantissa has overflowed due to rounding.");
+                    // Mantissa has overflowed due to rounding
 
                     rounded_exponent = non_rounded_exponent + 1;
 
                     if (rounded_exponent == {EXPONENT_WIDTH{1'b1}}) begin
-                        $display("Overflow detected during rounding.");
+                        // Overflow detected during rounding
 
                         // Note: out_sign is already set
                         rounded_exponent = {EXPONENT_WIDTH{1'b1}};
