@@ -25,6 +25,9 @@ module floating_point_adder #(
     output reg invalid_operation_flag
 );
 
+    generate;
+    endgenerate
+
     localparam int RoundingBits = MANTISSA_WIDTH;
     localparam int TrueRoundingBits = RoundingBits * ROUND_TO_NEAREST_TIES_TO_EVEN;
 
