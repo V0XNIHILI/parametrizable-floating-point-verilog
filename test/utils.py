@@ -10,7 +10,7 @@ def run_module_test(module_name: str, extension: str = "v", file_name: Optional[
 
     # Ignore WIDTHEXPAND warnings: https://verilator.org/guide/latest/warnings.html#cmdoption-arg-WIDTHEXPAND
     # This is when you use 4 bits but you would need 5 bits, but this is in 99.99% of the cases as intended
-    basic_compile_args = ['-Wno-WIDTHEXPAND'] if use_basic_compile_args else []
+    basic_compile_args = ['-Wno-WIDTHEXPAND'] if use_basic_compile_args and simulator == "verilator" else []
     extra_args = []
 
     if include_src_dir:
@@ -36,6 +36,6 @@ def run_module_test(module_name: str, extension: str = "v", file_name: Optional[
         toplevel=module_name,
         module=f"tests.{module_name}_tests",
         parameters=parameters,
-        compile_args=compile_args, #  '--x-assign unique', '--x-initial unique'
+        compile_args=compile_args, # TODO: '--x-assign unique', '--x-initial unique'
         extra_args=extra_args
     )

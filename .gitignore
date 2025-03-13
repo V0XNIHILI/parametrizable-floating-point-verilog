@@ -24,3 +24,7 @@ results.xml
 
 # Verilator
 obj_dir
+
+# Berkely TestFloat 3
+berkeley-testfloat-3
+berkeley-softfloat-3
